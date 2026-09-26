@@ -20,6 +20,9 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <failOnMissingWebXml>false</failOnMissingWebXml>
+        <!-- Versión de webapp-runner: sirve para correr el WAR como si fuera
+             un jar ejecutable en Railway -->
+        <webapp-runner.version>9.0.68.0</webapp-runner.version>
     </properties>
 
     <!--
@@ -52,25 +55,21 @@
             <version>8.0.33</version>
         </dependency>
 
-        <!--
-            org.json: librería para parsear y construir objetos JSON.
-            Usada en ApiColombiaServlet para leer la respuesta de la API.
-            CORRECCIÓN: esta dependencia estaba fuera del bloque <dependencies>
-            lo que causaba el error "Unrecognised tag: dependency" en Maven.
-        -->
+        <!-- org.json: librería para parsear y construir objetos JSON.
+             Usada en ApiColombiaServlet para leer la respuesta de la API. -->
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20240303</version>
         </dependency>
-        
+
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>javax.mail</artifactId>
             <version>1.6.2</version>
         </dependency>
 
-            <!-- Google Gson: manipulación de JSON en servlets territoriales -->
+        <!-- Google Gson: manipulación de JSON en servlets territoriales -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
@@ -78,12 +77,50 @@
         </dependency>
 
     </dependencies>
-    
+
     <!-- FIN del bloque de dependencias — no agregar <dependency> después de esta línea -->
 
     <build>
         <!-- Nombre del archivo WAR generado al compilar -->
         <finalName>sadu_apis</finalName>
+
+        <plugins>
+            <!-- Descarga webapp-runner.jar a target/ en cada build.
+                 Railway usará ese jar para levantar el .war como servidor. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.6.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-webapp-runner</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.github.jsimone</groupId>
+                                    <artifactId>webapp-runner</artifactId>
+                                    <version>${webapp-runner.version}</version>
+                                    <destFileName>webapp-runner.jar</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
+
+    <!-- Repositorio donde vive webapp-runner -->
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
 
 </project>

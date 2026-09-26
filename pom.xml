@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Identificación del proyecto -->
+    <groupId>com.sadu</groupId>
+    <artifactId>sadu_apis</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>war</packaging>
+
+    <name>sadu_apis</name>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Java 17 compatible con NetBeans y Tomcat 9 -->
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <failOnMissingWebXml>false</failOnMissingWebXml>
+    </properties>
+
+    <!--
+        IMPORTANTE: Todas las dependencias deben estar DENTRO de este
+        único bloque <dependencies>. No puede haber etiquetas <dependency>
+        fuera de este bloque o Maven lanzará un error de POM malformado.
+    -->
+    <dependencies>
+
+        <!-- Servlet API para Tomcat 9 (javax.servlet) -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>4.0.1</version>
+            <!-- "provided" significa que Tomcat ya la incluye en tiempo de ejecución -->
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- JSTL: permite usar etiquetas <c:forEach>, <c:if>, etc. en JSP -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>jstl</artifactId>
+            <version>1.2</version>
+        </dependency>
+
+        <!-- Conector MySQL: permite conectar Java con la base de datos MySQL -->
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <version>8.0.33</version>
+        </dependency>
+
+        <!--
+            org.json: librería para parsear y construir objetos JSON.
+            Usada en ApiColombiaServlet para leer la respuesta de la API.
+            CORRECCIÓN: esta dependencia estaba fuera del bloque <dependencies>
+            lo que causaba el error "Unrecognised tag: dependency" en Maven.
+        -->
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20240303</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>javax.mail</artifactId>
+            <version>1.6.2</version>
+        </dependency>
+
+            <!-- Google Gson: manipulación de JSON en servlets territoriales -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.10.1</version>
+        </dependency>
+
+    </dependencies>
+    
+    <!-- FIN del bloque de dependencias — no agregar <dependency> después de esta línea -->
+
+    <build>
+        <!-- Nombre del archivo WAR generado al compilar -->
+        <finalName>sadu_apis</finalName>
+    </build>
+
+</project>

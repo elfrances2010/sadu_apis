@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Identificación del proyecto -->
+    <groupId>com.sadu</groupId>
+    <artifactId>sadu_apis</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <!-- Empaquetado fijo como WAR. Este mismo .war se usa tanto en
+         NetBeans/Tomcat local como en Railway (ver plugin más abajo) -->
+    <packaging>war</packaging>
+
+    <name>sadu_apis</name>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Java 17 compatible con NetBeans y Tomcat 9 -->
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <!-- Evita error si no existe web.xml en proyectos modernos -->
+        <failOnMissingWebXml>false</failOnMissingWebXml>
+        <!-- Versión de webapp-runner (build para Tomcat 9.0.x), disponible
+             directamente en Maven Central. Este jar sirve para correr el
+             .war como si fuera una app ejecutable en Railway. -->
+        <webapp-runner.version>9.0.119.0</webapp-runner.version>
+    </properties>
+
+    <!--
+        IMPORTANTE: Todas las dependencias deben estar DENTRO de este
+        único bloque <dependencies>. No puede haber etiquetas <dependency>
+        fuera de este bloque o Maven lanzará un error de POM malformado.
+    -->
+    <dependencies>
+
+        <!-- Servlet API para Tomcat 9 (javax.servlet) -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>4.0.1</version>
+            <!-- "provided" significa que Tomcat ya la incluye en tiempo de ejecución -->
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- JSTL: permite usar etiquetas <c:forEach>, <c:if>, etc. en JSP -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>jstl</artifactId>
+            <version>1.2</version>
+        </dependency>
+
+        <!-- Conector MySQL: permite conectar Java con la base de datos MySQL -->
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <version>8.0.33</version>
+        </dependency>
+
+        <!-- org.json: librería para parsear y construir objetos JSON.
+             Usada en ApiColombiaServlet para leer la respuesta de la API. -->
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20240303</version>
+        </dependency>
+
+        <!-- JavaMail: envío de correos (ej. recuperación de contraseña) -->
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>javax.mail</artifactId>
+            <version>1.6.2</version>
+        </dependency>
+
+        <!-- Google Gson: manipulación de JSON en servlets territoriales -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.10.1</version>
+        </dependency>
+
+    </dependencies>
+
+    <!-- FIN del bloque de dependencias — no agregar <dependency> después de esta línea -->
+
+    <build>
+        <!-- Nombre del archivo WAR generado al compilar: target/sadu_apis.war -->
+        <finalName>sadu_apis</finalName>
+
+        <plugins>
+            <!-- Descarga webapp-runner.jar a target/ en cada "mvn package".
+                 Este paso NO afecta tu despliegue normal en Tomcat/NetBeans,
+                 solo agrega un archivo extra que Railway usa para arrancar
+                 el mismo .war como si fuera un jar ejecutable. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.6.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-webapp-runner</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <!-- Coordenada oficial en Maven Central (Heroku) -->
+                                    <groupId>com.heroku</groupId>
+                                    <artifactId>webapp-runner</artifactId>
+                                    <version>${webapp-runner.version}</version>
+                                    <destFileName>webapp-runner.jar</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

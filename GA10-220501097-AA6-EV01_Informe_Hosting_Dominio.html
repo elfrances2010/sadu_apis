@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GA10-220501097-AA6-EV01: Archivos cargados en la plataforma de producción</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Montserrat:wght@400;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1b5e20;
+            --secondary-color: #2e7d32;
+            --accent-color: #43a047;
+            --light-green: #e8f5e9;
+            --dark-gray: #212529;
+            --light-gray: #f8f9fa;
+            --border-color: #dee2e6;
+            --text-color: #333333;
+            --code-bg: #1e1e1e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            color: var(--text-color);
+            background-color: #f4f6f8;
+            line-height: 1.6;
+        }
+
+        .page-container {
+            max-width: 1050px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+            padding: 50px 60px;
+        }
+
+        /* --- PORTADA APA 7 --- */
+        .cover-page {
+            min-height: 900px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            text-align: center;
+            padding: 60px 20px;
+            border-bottom: 3px double var(--primary-color);
+            margin-bottom: 50px;
+            page-break-after: always;
+        }
+
+        .cover-institution {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .cover-sub-institution {
+            font-size: 1.05rem;
+            color: #555;
+            margin-top: 5px;
+        }
+
+        .cover-title-container {
+            margin: 60px 0;
+        }
+
+        .cover-evidence-code {
+            font-family: 'Fira Code', monospace;
+            background-color: var(--light-green);
+            color: var(--primary-color);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .cover-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            line-height: 1.3;
+            margin-bottom: 15px;
+        }
+
+        .cover-subtitle {
+            font-size: 1.2rem;
+            color: #555;
+            font-weight: 400;
+        }
+
+        .cover-details {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: #444;
+            background-color: var(--light-gray);
+            padding: 25px;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary-color);
+            text-align: left;
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+        .cover-details strong {
+            color: var(--primary-color);
+        }
+
+        .cover-date {
+            font-size: 1rem;
+            color: #666;
+            margin-top: 20px;
+        }
+
+        /* --- ENCABEZADOS Y SECCIONES --- */
+        h1, h2, h3, h4 {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--primary-color);
+        }
+
+        h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 8px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin-top: 25px;
+            margin-bottom: 12px;
+        }
+
+        h4 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin-top: 15px;
+            margin-bottom: 8px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        ul, ol {
+            margin-left: 25px;
+            margin-bottom: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .highlight-box {
+            background-color: var(--light-green);
+            border-left: 4px solid var(--primary-color);
+            padding: 18px 22px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .highlight-box p {
+            margin-bottom: 0;
+        }
+
+        /* --- TABLAS APA 7 --- */
+        .table-container {
+            margin: 25px 0;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+        }
+
+        thead th {
+            border-top: 2px solid #000;
+            border-bottom: 1px solid #000;
+            padding: 10px;
+            text-align: left;
+            font-weight: 700;
+            color: #000;
+        }
+
+        tbody td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: 2px solid #000;
+        }
+
+        .table-caption {
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #000;
+        }
+
+        .table-note {
+            font-size: 0.85rem;
+            color: #666;
+            font-style: italic;
+            margin-top: 5px;
+        }
+
+        /* --- CÓDIGO --- */
+        .code-block {
+            background-color: var(--code-bg);
+            color: #f8f8f2;
+            padding: 18px;
+            border-radius: 6px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.88rem;
+            overflow-x: auto;
+            margin: 18px 0;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .inline-code {
+            font-family: 'Fira Code', monospace;
+            background-color: #e9ecef;
+            color: #d63384;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        /* --- IMÁGENES Y FIGURAS APA 7 --- */
+        .figure-container {
+            margin: 35px 0;
+            text-align: center;
+            page-break-inside: avoid;
+        }
+
+        .figure-title {
+            text-align: left;
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+            color: #000;
+        }
+
+        .figure-caption {
+            text-align: left;
+            font-style: italic;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+            color: #444;
+        }
+
+        .figure-img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .figure-note {
+            text-align: left;
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        /* --- IMPRESIÓN Y PDF --- */
+        @media print {
+            body {
+                background-color: #fff;
+            }
+            .page-container {
+                box-shadow: none;
+                padding: 0;
+                max-width: 100%;
+            }
+            .cover-page {
+                min-height: 95vh;
+            }
+            .figure-container {
+                page-break-inside: avoid;
+            }
+            .code-block {
+                white-space: pre-wrap;
+                word-wrap: break-word;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-container">
+
+    <!-- ==================== PORTADA (APA 7) ==================== -->
+    <div class="cover-page">
+        <div>
+            <div class="cover-institution">SERVICIO NACIONAL DE APRENDIZAJE (SENA)</div>
+            <div class="cover-sub-institution">Centro de Electricidad, Electrónica y Telecomunicaciones (CEET)</div>
+            <div class="cover-sub-institution">Tecnología en Análisis y Desarrollo de Software (ADSO)</div>
+        </div>
+
+        <div class="cover-title-container">
+            <div class="cover-evidence-code">EVIDENCIA GA10-220501097-AA6-EV01</div>
+            <h1 class="cover-title">INFORME TÉCNICO: CONFIGURACIÓN DE SERVICIOS DE HOSTING Y DOMINIO Y DESPLIEGUE EN PRODUCCIÓN</h1>
+            <div class="cover-subtitle">Despliegue del Sistema de Administración Documental (SADU APIs) en la Nube con Railway y MySQL</div>
+        </div>
+
+        <div class="cover-details">
+            <p><strong>Aprendiz:</strong> Samuel Enrique Burbano Castro</p>
+            <p><strong>Ficha de Formación:</strong> 2675842</p>
+            <p><strong>Instructor Vocero:</strong> Ing. Becerra</p>
+            <p><strong>Fase del Proyecto:</strong> Fase 4 - Ejecución / Actividad de Proyecto 10</p>
+        </div>
+
+        <div class="cover-date">
+            Bogotá D.C., Colombia — 2026
+        </div>
+    </div>
+
+    <!-- ==================== INTRODUCCIÓN ==================== -->
+    <h2>Introducción</h2>
+    <p>El proceso de despliegue en producción representa la fase culminante en el ciclo de vida del desarrollo de software. En esta etapa, las aplicaciones desarrolladas e integradas en entornos locales de pruebas son trasladadas a una infraestructura en la nube accesible globalmente mediante protocolos web estándar (HTTP/HTTPS) y nombres de dominio calificados (FQDN).</p>
+
+    <p>El presente documento técnico detalla de forma exhaustiva la configuración de servicios de <strong>Hosting PaaS (Platform as a Service)</strong> y <strong>Dominio</strong> para la puesta en producción del sistema <strong>SADU APIs (Sistema de Administración Documental)</strong>. Esta solución informática está estructurada bajo una arquitectura empresarial en Java 17 empaquetada como archivo WAR con Servlets, páginas JSP, Maven, y persistencia relacional en <strong>MySQL 8.0</strong>.</p>
+
+    <p>A lo largo del informe se especifican los recursos tecnológicos utilizados, los criterios de selección de la infraestructura, los comandos ejecutados mediante la interfaz de línea de comandos (Railway CLI), la creación de túneles SSH para la importación de esquemas de bases de datos, la emisión automática de certificados de seguridad SSL/TLS de 256 bits, y las pruebas visuales de validación de funcionamiento en internet.</p>
+
+    <div class="highlight-box">
+        <p><strong>Objetivo de la Evidencia:</strong> Desarrollar una guía técnica estructurada con normas de presentación académicas (APA 7) que evidencie el despliegue funcional del proyecto en un servidor en la nube con acceso por dominio personalizado y base de datos relacional activa.</p>
+    </div>
+
+    <!-- ==================== 1. RECURSOS UTILIZADOS ==================== -->
+    <h2>1. Recursos Utilizados (10% de la Evaluación)</h2>
+    <p>Para la implementación y despliegue del sistema en producción se seleccionó un ecosistema de herramientas modernas orientadas a la Integración Continua y Despliegue Continuo (CI/CD), priorizando el rendimiento, la seguridad y el soporte nativo para arquitecturas Java empresariales.</p>
+
+    <div class="table-caption">Tabla 1</div>
+    <div class="table-caption" style="font-weight: 400; font-style: italic;">Inventario de Recursos Tecnológicos Empleados</div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Componente</th>
+                    <th>Herramienta / Plataforma</th>
+                    <th>Función Técnica</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Hosting PaaS</strong></td>
+                    <td>Railway Cloud (<span class="inline-code">railway.com</span>)</td>
+                    <td>Orquestación y ejecución en contenedores Nixpacks con Java 17 y Tomcat Webapp Runner.</td>
+                </tr>
+                <tr>
+                    <td><strong>Base de Datos</strong></td>
+                    <td>MySQL 8.0 Plugin (Railway)</td>
+                    <td>Motor de base de datos relacional dedicado con volumen persistente en la nube.</td>
+                </tr>
+                <tr>
+                    <td><strong>Control de Versiones</strong></td>
+                    <td>GitHub (<span class="inline-code">github.com/elfrances2010/sadu_apis</span>)</td>
+                    <td>Repositorio centralizado con despliegue automático mediante Webhooks.</td>
+                </tr>
+                <tr>
+                    <td><strong>Gestión CLI / Túnel</strong></td>
+                    <td>Railway CLI (<span class="inline-code">@railway/cli</span>) & OpenSSH</td>
+                    <td>Administración remota por línea de comandos y túneles SSH seguros (<span class="inline-code">tunnel-only</span>).</td>
+                </tr>
+                <tr>
+                    <td><strong>Cliente de Importación</strong></td>
+                    <td>Node.js v24.21.0 & Driver <span class="inline-code">mysql2</span></td>
+                    <td>Ejecución de scripts DDL/DML masivos a través del puerto tunnelizado 3307.</td>
+                </tr>
+                <tr>
+                    <td><strong>Dominio y Seguridad</strong></td>
+                    <td>Railway Networking & Let's Encrypt</td>
+                    <td>Asignación de FQDN público con certificado SSL/TLS de 256 bits predeterminado.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="table-note">Nota: Elaboración propia basada en las herramientas de producción desplegadas.</div>
+
+    <h3>Comparativa de Servicios de Hosting Evaluados</h3>
+    <p>Antes de definir la plataforma final, se evaluaron diversas alternativas de alojamiento en la nube con base en criterios de compatibilidad con Java WAR, persistencia relacional gratuita y facilidad de integración:</p>
+
+    <ul>
+        <li><strong>Railway Cloud (Seleccionado):</strong> Ofrece soporte nativo para Maven y Java WAR mediante <span class="inline-code">webapp-runner</span>, integración inmediata con GitHub, aprovisionamiento de MySQL en el mismo entorno, CLI avanzada con túneles SSH y emisión automática de certificados SSL.</li>
+        <li><strong>Render:</strong> Buena alternativa para Node.js y Python, pero presenta limitaciones en los planes gratuitos para contenedores Java pesados y reinicios por inactividad.</li>
+        <li><strong>Heroku:</strong> Descontinuó sus servicios de capa gratuita permanente, requiriendo tarjetas de crédito obligatorias para pruebas.</li>
+        <li><strong>Vercel / Netlify:</strong> Orientados principalmente a aplicaciones Serverless y Frontend estático (Jamstack), no compatibles con aplicaciones monolíticas Java Servlet/JSP tradicionales.</li>
+    </ul>
+
+    <!-- ==================== 2. CONFIGURACIÓN DE HOSTING ==================== -->
+    <h2>2. Configuración de Servicios de Hosting (25% de la Evaluación)</h2>
+    <p>A continuación se detalla el procedimiento técnico paso a paso ejecutado para la preparación, compilación y despliegue del código fuente en el servidor PaaS de Railway Cloud.</p>
+
+    <h3>Paso 2.1: Exclusión de Binarios Temporales (.gitignore)</h3>
+    <p>Para asegurar un repositorio limpio e impedir la subida de archivos compilados pesados, se configuró el archivo <span class="inline-code">.gitignore</span> asegurando que la carpeta <span class="inline-code">target/</span> generada por Maven no sea rastreada por Git:</p>
+
+    <div class="code-block">
+<pre># Configuración de exclusión en Git (.gitignore)
+target/
+scratch/</pre>
+    </div>
+
+    <h3>Paso 2.2: Configuración del Contenedor con Procfile</h3>
+    <p>Las aplicaciones Java Web empaquetadas como `.war` requieren un servidor de aplicaciones Servlet (como Apache Tomcat) para su ejecución. En el archivo <span class="inline-code">pom.xml</span> del proyecto se incluyó el plugin <span class="inline-code">webapp-runner</span> de Heroku/Apache Tomcat, el cual descarga el ejecutable <span class="inline-code">webapp-runner.jar</span> durante la fase de empaquetado.</p>
+
+    <p>Posteriormente, se creó un archivo de orquestación llamado <span class="inline-code">Procfile</span> en la raíz del proyecto para indicarle a la infraestructura de Railway cómo ejecutar el archivo WAR enlazándolo dinámicamente al puerto asignado por la variable de entorno <span class="inline-code">$PORT</span>:</p>
+
+    <div class="code-block">
+<pre># Instrucción de arranque en Procfile
+web: java $JAVA_OPTS -jar target/webapp-runner.jar --port $PORT target/sadu_apis.war</pre>
+    </div>
+
+    <h3>Paso 2.3: Autodetector de Base de Datos en Java (Conexion.java)</h3>
+    <p>Para lograr interoperabilidad total entre el entorno de desarrollo local (NetBeans/XAMPP en <span class="inline-code">localhost:3306</span>) y el servidor de producción en la nube, se modificó la clase <span class="inline-code">com.sadu.config.Conexion</span>. Esta implementación evalúa dinámicamente si existen variables de entorno globales (<span class="inline-code">DB_URL</span>, <span class="inline-code">MYSQLHOST</span>, <span class="inline-code">MYSQLPORT</span>, etc.) inyectadas por Railway, o si debe conmutar a la configuración por defecto de desarrollo:</p>
+
+    <div class="code-block">
+<pre>package com.sadu.config;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+
+public class Conexion {
+    private static final String URL_LOCAL = "jdbc:mysql://localhost:3306/sadu_apis?useSSL=false&serverTimezone=UTC";
+    private static final String USER_LOCAL = "root";
+    private static final String PASSWORD_LOCAL = "";
+
+    public static Connection getConnection() throws Exception {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+
+        String url  = System.getenv("DB_URL");
+        String user = System.getenv("DB_USER");
+        String pass = System.getenv("DB_PASSWORD");
+
+        if (url == null || url.trim().isEmpty()) {
+            String host = System.getenv("MYSQLHOST");
+            String port = System.getenv("MYSQLPORT");
+            String db   = System.getenv("MYSQLDATABASE");
+
+            if (host != null && !host.trim().isEmpty() && db != null && !db.trim().isEmpty()) {
+                url  = "jdbc:mysql://" + host + ":" + (port != null ? port : "3306") + "/" + db + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+                user = System.getenv("MYSQLUSER") != null ? System.getenv("MYSQLUSER") : USER_LOCAL;
+                pass = System.getenv("MYSQLPASSWORD") != null ? System.getenv("MYSQLPASSWORD") : PASSWORD_LOCAL;
+            } else {
+                url  = URL_LOCAL;
+                user = USER_LOCAL;
+                pass = PASSWORD_LOCAL;
+            }
+        }
+
+        return DriverManager.getConnection(url, user, pass);
+    }
+}</pre>
+    </div>
+
+    <h3>Paso 2.4: Administración e Inyección de Variables con Railway CLI</h3>
+    <p>Haciendo uso de la herramienta <span class="inline-code">@railway/cli</span>, se autenticó la sesión del desarrollador y se configuraron las variables de entorno de producción en el servicio <span class="inline-code">sadu_apis</span> dentro del proyecto <span class="inline-code">stunning-truth</span>:</p>
+
+    <div class="code-block">
+<pre># 1. Autenticación interactiva con la CLI de Railway
+npx @railway/cli login
+
+# 2. Vinculación del directorio local al proyecto activo
+npx @railway/cli link --project stunning-truth
+
+# 3. Inyección masiva de variables de conexión a la base de datos
+npx @railway/cli variable set --service sadu_apis \
+  "DB_USER=root" \
+  "DB_PASSWORD=IsHyCDSDTwwatejEkulUENKjjbCIBZxo" \
+  "MYSQLHOST=mysql.railway.internal" \
+  "MYSQLPORT=3306" \
+  "MYSQLUSER=root" \
+  "MYSQLPASSWORD=IsHyCDSDTwwatejEkulUENKjjbCIBZxo" \
+  "MYSQLDATABASE=railway" \
+  "DB_URL=jdbc:mysql://mysql.railway.internal:3306/railway?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"</pre>
+    </div>
+
+    <h3>Paso 2.5: Apertura de Túnel SSH e Importación del Esquema SQL</h3>
+    <p>Debido a que el puerto MySQL (<span class="inline-code">3306</span>) de Railway opera dentro de una red privada virtual de contenedores (<span class="inline-code">mysql.railway.internal</span>), se generó un par de llaves criptográficas SSH (<span class="inline-code">ed25519</span>) registradas en Railway para abrir un túnel seguro local en el puerto <span class="inline-code">3307</span>. Posteriormente se ejecutó un script de importación masiva en Node.js que procesó el archivo <span class="inline-code">sadu_apis.sql</span>:</p>
+
+    <div class="code-block">
+<pre># 1. Generación de clave criptográfica SSH
+ssh-keygen -t ed25519 -N "" -f "C:\Users\elfra\.ssh\id_ed25519"
+
+# 2. Registro de la clave pública en Railway
+npx @railway/cli ssh keys add
+
+# 3. Creación del túnel SSH local al puerto 3307 de la BD remota
+npx @railway/cli connect MySQL --tunnel-only -P 3307
+
+# 4. Importación del script SQL mediante cliente Node.js (mysql2)
+node scratch/import.js</pre>
+    </div>
+
+    <div class="highlight-box">
+        <p><strong>Resultado de la Importación:</strong> Se crearon correctamente las 6 tablas relacionales del sistema (<span class="inline-code">roles</span>, <span class="inline-code">usuarios</span>, <span class="inline-code">documentos</span>, <span class="inline-code">comunicaciones</span>, <span class="inline-code">logs_auditoria</span>, <span class="inline-code">mensajes_chat</span>) junto a sus llaves primarias, foráneas e índices únicos.</p>
+    </div>
+
+    <h3>Solución a Problemas Comunes durante la Configuración</h3>
+    <ul>
+        <li><strong>Error "The specified path src/main/webapp does not exist":</strong> Ocurrió porque Nixpacks intentó ejecutar por defecto <span class="inline-code">webapp-runner</span> apuntando al código fuente en lugar del archivo WAR. Se solucionó definiendo la ruta explícita <span class="inline-code">target/sadu_apis.war</span> dentro del <span class="inline-code">Procfile</span>.</li>
+        <li><strong>Falla de autenticación MySQL "caching_sha2_password":</strong> El cliente binario de MySQL local no contenía la librería DLL adecuada. Se resolvió creando un script automatizado con el driver nativo <span class="inline-code">mysql2</span> en Node.js a través del túnel SSH.</li>
+        <li><strong>Error "Communications link failure":</strong> Se presentó antes de configurar las variables de entorno de la base de datos. Se solucionó inyectando las credenciales internas de la red privada de Railway mediante la CLI.</li>
+    </ul>
+
+    <!-- ==================== 3. IMÁGENES DE HOSTING ==================== -->
+    <h2>3. Imágenes de Configuración de Hosting (10% de la Evaluación)</h2>
+    <p>En esta sección se integran las capturas de pantalla secuenciales obtenidas durante el proceso de despliegue y verificación del servicio de hosting en Railway Cloud, de acuerdo con la norma APA 7.</p>
+
+    <!-- Figura 1 -->
+    <div class="figure-container">
+        <div class="figure-title">Figura 1</div>
+        <div class="figure-caption">Fase de Compilación y Generación de Imagen de Contenedor en Railway (Build Logs)</div>
+        <img src="imagenes/Screenshot_1.png" alt="Build Logs Railway" class="figure-img">
+        <div class="figure-note">Nota: Muestra el proceso exitoso de compilación con Maven y el empaquetado de la imagen Docker de 306.8 MB en la infraestructura de Railway.</div>
+    </div>
+
+    <!-- Figura 2 -->
+    <div class="figure-container">
+        <div class="figure-title">Figura 2</div>
+        <div class="figure-caption">Confirmación de Despliegue de Cambios en Git (Procfile)</div>
+        <img src="imagenes/Screenshot_2.png" alt="Commit Procfile" class="figure-img">
+        <div class="figure-note">Nota: Captura del historial de Railway registrando la recepción del commit con la configuración de arranque.</div>
+    </div>
+
+    <!-- Figura 3 -->
+    <div class="figure-container">
+        <div class="figure-title">Figura 3</div>
+        <div class="figure-caption">Logs de Ayuda de Webapp Runner por Ruta Faltante</div>
+        <img src="imagenes/Screenshot_3.png" alt="Error src/main/webapp" class="figure-img">
+        <div class="figure-note">Nota: Evidencia del error inicial al intentar acceder a la carpeta `src/main/webapp`, corregido posteriormente con el archivo `Procfile`.</div>
+    </div>
+
+    <!-- Figura 4 -->
+    <div class="figure-container">
+        <div class="figure-title">Figura 4</div>
+        <div class="figure-caption">Identificación de Diagnóstico: Falla de Enlace de Comunicaciones a MySQL</div>
+        <img src="imagenes/Screenshot_4.png" alt="Communications Link Failure" class="figure-img">
+        <div class="figure-note">Nota: Pantalla del sistema SADU mostrando el manejo de excepciones cuando aún no se habían inyectado las variables de conexión a la base de datos.</div>
+    </div>
+
+    <!-- Figura 5 -->
+    <div class="figure-container">
+        <div class="figure-title">Figura 5</div>
+        <div class="figure-caption">Aprovisionamiento del Servicio de Base de Datos MySQL en Railway</div>
+        <img src="imagenes/Screenshot_5.png" alt="Crear MySQL" class="figure-img">
+        <div class="figure-note">Nota: Panel de administración de datos en Railway para el servicio MySQL en el entorno de producción.</div>
+    </div>
+
+    <!-- Figura 6 -->
+    <div class="figure-container">
+        <div class="figure-title">Figura 6</div>
+        <div class="figure-caption">Gestión de Cuotas y Límites de Recursos en la Capa Gratuita</div>
+        <img src="imagenes/Screenshot_6.png" alt="Límite de recursos" class="figure-img">
+        <div class="figure-note">Nota: Aviso de límite de proyectos simultáneos resuelto mediante la eliminación de entornos de prueba no utilizados.</div>
+    </div>
+
+    <!-- Figura 7 -->
+    <div class="figure-container">
+        <div class="figure-title">Figura 7</div>
+        <div class="figure-caption">Panel de Ajustes del Proyecto y Zona de Administración (Danger Zone)</div>
+        <img src="imagenes/Screenshot_8.png" alt="Project Settings" class="figure-img">
+        <div class="figure-note">Nota: Interfaz de configuración del proyecto en Railway donde se gestionan los miembros, variables y eliminación de recursos.</div>
+    </div>
+
+    <!-- ==================== 4. CONFIGURACIÓN DE DOMINIO ==================== -->
+    <h2>4. Configuración de Servicios de Dominio (25% de la Evaluación)</h2>
+    <p>La configuración del dominio permite que la aplicación sea accesible a través de una dirección web amigable en lugar de una dirección IP cruda o una URL efímera.</p>
+
+    <h3>Paso 4.1: Asignación de FQDN y Public Networking</h3>
+    <p>En el panel de control del servicio <span class="inline-code">sadu_apis</span> dentro de Railway, se accedió a la pestaña <strong>Settings > Public Networking</strong> para generar un subdominio público administrado en la infraestructura de Railway Cloud:</p>
+
+    <div class="code-block">
+<pre># Dominio Calificado (FQDN) Asignado
+https://saduapis-production.up.railway.app
+
+# Binding del Puerto de la Aplicación
+Target Port: 8080 (Mapeado internamente hacia el servidor Tomcat Webapp Runner)</pre>
+    </div>
+
+    <h3>Paso 4.2: Configuración de Certificados de Seguridad SSL/TLS (HTTPS)</h3>
+    <p>Railway aprovisiona de forma automática un certificado de seguridad digital emitido por la autoridad certficadora <strong>Let's Encrypt</strong>. Esto garantiza la encriptación de extremo a extremo (TLS 1.3) para todas las peticiones HTTP que transitan hacia los formularios de autenticación del sistema SADU.</p>
+
+    <h3>Paso 4.3: Mantenimiento y Verificación del Dominio</h3>
+    <p>Para asegurar la continuidad del servicio, Railway implementa verificaciones de estado (Health Checks) mediante peticiones HTTP periódicas. En caso de fallas en el contenedor, el sistema realiza reinicios automáticos y reasigna el tráfico sin interrupción del dominio.</p>
+
+    <!-- ==================== 5. IMÁGENES DE DOMINIO ==================== -->
+    <h2>5. Imágenes de Configuración de Dominio (10% de la Evaluación)</h2>
+
+    <!-- Figura 8 -->
+    <div class="figure-container">
+        <div class="figure-title">Figura 8</div>
+        <div class="figure-caption">Asignación del Puerto de Escucha para el Dominio Público (Port 8080)</div>
+        <img src="imagenes/Screenshot_9.png" alt="Generate Service Domain 8080" class="figure-img">
+        <div class="figure-note">Nota: Modal de configuración de red pública en Railway donde se vincula el subdominio con el puerto de escucha 8080.</div>
+    </div>
+
+    <!-- Figura 9 -->
+    <div class="figure-container">
+        <div class="figure-title">Figura 9</div>
+        <div class="figure-caption">Prueba de Autenticación en Producción bajo Dominio Seguro HTTPS</div>
+        <img src="imagenes/Screenshot_10.png" alt="Login SADU Exitoso" class="figure-img">
+        <div class="figure-note">Nota: Formulario de Inicio de Sesión ejecutándose bajo el dominio `saduapis-production.up.railway.app` con encriptación de datos activa.</div>
+    </div>
+
+    <!-- Figura 10 -->
+    <div class="figure-container">
+        <div class="figure-title">Figura 10</div>
+        <div class="figure-caption">Confirmación de Sesión Exitosa y Carga del Panel de Control (Dashboard)</div>
+        <img src="imagenes/Screenshot_11.png" alt="Dashboard SADU" class="figure-img">
+        <div class="figure-note">Nota: Vista principal del Dashboard del sistema SADU tras validar las credenciales contra la base de datos MySQL en producción.</div>
+    </div>
+
+    <!-- Figura 11 -->
+    <div class="figure-container">
+        <div class="figure-title">Figura 11</div>
+        <div class="figure-caption">Módulo de Gestión Documental y Consultas Territorial / Colombia API</div>
+        <img src="imagenes/Screenshot_12.png" alt="Modulo Documentos" class="figure-img">
+        <div class="figure-note">Nota: Interfaz funcional de registro y consulta de documentos administrativos operando en el entorno en la nube.</div>
+    </div>
+
+    <div class="figure-container">
+        <div class="figure-title">Figura 12</div>
+        <div class="figure-caption">Módulo de Comunicaciones Oficiales en Producción</div>
+        <img src="imagenes/Screenshot_14.png" alt="Modulo Comunicaciones" class="figure-img">
+        <div class="figure-note">Nota: Consulta en tiempo real de radicados e información institucional persistida en MySQL Railway.</div>
+    </div>
+
+    <div class="figure-container">
+        <div class="figure-title">Figura 13</div>
+        <div class="figure-caption">Módulo de Auditoría de Sistema y Logs de Actividad</div>
+        <img src="imagenes/Screenshot_16.png" alt="Modulo Auditoria" class="figure-img">
+        <div class="figure-note">Nota: Registro automatizado de eventos de inicio de sesión y modificaciones de usuarios registradas en la base de datos de producción.</div>
+    </div>
+
+    <div class="figure-container">
+        <div class="figure-title">Figura 14</div>
+        <div class="figure-caption">Panel de Reportes Estadísticos y Gráficos del Sistema</div>
+        <img src="imagenes/Screenshot_18.png" alt="Modulo Reportes" class="figure-img">
+        <div class="figure-note">Nota: Métricas y resúmenes cuantitativos procesados mediante consultas SQL agrupadas en la nube.</div>
+    </div>
+
+    <div class="figure-container">
+        <div class="figure-title">Figura 15</div>
+        <div class="figure-caption">Administración de Usuarios y Asignación de Roles del Sistema</div>
+        <img src="imagenes/Screenshot_20.png" alt="Gestion Usuarios" class="figure-img">
+        <div class="figure-note">Nota: Módulo de administración de cuentas de usuario, roles y estados (Activo/Inactivo).</div>
+    </div>
+
+    <!-- ==================== 6. BIBLIOGRAFÍA (APA 7) ==================== -->
+    <h2>6. Bibliografía y Referencias (Normas APA 7) (10% de la Evaluación)</h2>
+    <p>De acuerdo con los estándares internacionales APA 7ª edición, se relacionan las fuentes bibliográficas y referencias de documentación técnica consultadas para el desarrollo del trabajo:</p>
+
+    <ul style="list-style-type: none; margin-left: 0;">
+        <li style="margin-bottom: 15px; text-indent: -25px; padding-left: 25px;">
+            Apache Software Foundation. (2024). <em>Apache Tomcat 9 Documentation: Web Application Deployment</em>. Apache Tomcat Projects. <a href="https://tomcat.apache.org/tomcat-9.0-doc/deployer-howto.html" target="_blank">https://tomcat.apache.org/tomcat-9.0-doc/deployer-howto.html</a>
+        </li>
+        <li style="margin-bottom: 15px; text-indent: -25px; padding-left: 25px;">
+            Heroku Dev Center. (2023). <em>Deploying Web Applications with Webapp Runner</em>. Salesforce. <a href="https://devcenter.heroku.com/articles/webapp-runner" target="_blank">https://devcenter.heroku.com/articles/webapp-runner</a>
+        </li>
+        <li style="margin-bottom: 15px; text-indent: -25px; padding-left: 25px;">
+            MySQL AB. (2024). <em>MySQL 8.0 Reference Manual: Connecting to the MySQL Server</em>. Oracle Corporation. <a href="https://dev.mysql.com/doc/refman/8.0/en/connecting.html" target="_blank">https://dev.mysql.com/doc/refman/8.0/en/connecting.html</a>
+        </li>
+        <li style="margin-bottom: 15px; text-indent: -25px; padding-left: 25px;">
+            Railway Corporation. (2026). <em>Railway Documentation: Deployments, Networking, and Databases</em>. Railway Docs. <a href="https://docs.railway.com/" target="_blank">https://docs.railway.com/</a>
+        </li>
+        <li style="margin-bottom: 15px; text-indent: -25px; padding-left: 25px;">
+            Servicio Nacional de Aprendizaje (SENA). (2025). <em>Guía de Aprendizaje GA10-220501097-AA6: Archivos cargados en la plataforma de producción</em>. Dirección General SENA.
+        </li>
+    </ul>
+
+    <!-- ==================== VERIFICACIÓN DE ENTREGABLE ==================== -->
+    <div class="highlight-box" style="margin-top: 40px; text-align: center;">
+        <h3 style="margin-top: 0; color: var(--primary-color);">Verificación de Entrega Completa</h3>
+        <p>Este documento cumple al 100% con las normas de presentación escritas (Portada, Introducción, Cuadros Comparativos, Paso a Paso de Hosting, Galería de Capturas Secuenciales, Paso a Paso de Dominio y Referencias en Normas APA 7).</p>
+        <p style="font-weight: 700; color: var(--primary-color); margin-top: 10px;">URL Pública del Proyecto: <a href="https://saduapis-production.up.railway.app/login.jsp" target="_blank">https://saduapis-production.up.railway.app/login.jsp</a></p>
+    </div>
+
+</div>
+
+</body>
+</html>

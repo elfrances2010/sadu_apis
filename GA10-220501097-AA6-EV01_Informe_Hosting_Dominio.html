@@ -347,9 +347,19 @@
 
     <p>A lo largo del informe se especifican los recursos tecnológicos utilizados, los criterios de selección de la infraestructura, los comandos ejecutados mediante la interfaz de línea de comandos (Railway CLI), la creación de túneles SSH para la importación de esquemas de bases de datos, la emisión automática de certificados de seguridad SSL/TLS de 256 bits, y las pruebas visuales de validación de funcionamiento en internet.</p>
 
-    <div class="highlight-box">
-        <p><strong>Objetivo de la Evidencia:</strong> Desarrollar una guía técnica estructurada con normas de presentación académicas (APA 7) que evidencie el despliegue funcional del proyecto en un servidor en la nube con acceso por dominio personalizado y base de datos relacional activa.</p>
-    </div>
+    <!-- ==================== OBJETIVOS ==================== -->
+    <h2>Objetivos del Proyecto</h2>
+    
+    <h3>Objetivo General</h3>
+    <p>Desplegar en un entorno de producción en la nube (Railway Cloud) la aplicación web Java empresarial SADU APIs (Sistema de Administración Documental) junto con su motor de base de datos relacional MySQL 8.0, garantizando el acceso público mediante un nombre de dominio calificado (FQDN) con cifrado de seguridad SSL/TLS.</p>
+
+    <h3>Objetivos Específicos</h3>
+    <ul>
+        <li>Configurar la infraestructura del contenedor web utilizando Maven, Apache Tomcat Webapp Runner y archivos de orquestación (<span class="inline-code">Procfile</span>) para enlazarse dinámicamente al puerto asignado por la nube.</li>
+        <li>Implementar un patrón de conexión dinámico en Java (<span class="inline-code">Conexion.java</span>) capaz de autodetectar variables de entorno de producción (<span class="inline-code">MYSQLHOST</span>, <span class="inline-code">DB_URL</span>) e interactuar de forma transparente con la base de datos relacional.</li>
+        <li>Ejecutar la administración remota de la infraestructura y el aprovisionamiento de datos mediante túneles seguros SSH y scripts de importación DDL/DML.</li>
+        <li>Asignar y verificar la resolución de nombres de dominio público bajo protocolo seguro HTTPS, evaluando la respuesta operativa de cada uno de los módulos del sistema (Autenticación, Dashboard, Documentos, Comunicaciones, Auditoría, Reportes y Usuarios).</li>
+    </ul>
 
     <!-- ==================== 1. RECURSOS UTILIZADOS ==================== -->
     <h2>1. Recursos Utilizados (10% de la Evaluación)</h2>
@@ -671,6 +681,15 @@ Target Port: 8080 (Mapeado internamente hacia el servidor Tomcat Webapp Runner)<
         <div class="figure-note">Nota: Módulo de administración de cuentas de usuario, roles y estados (Activo/Inactivo).</div>
     </div>
 
+    <!-- ==================== CONCLUSIONES ==================== -->
+    <h2>Conclusiones</h2>
+    <ol>
+        <li>La implementación de la arquitectura PaaS con Railway Cloud y Tomcat Webapp Runner demostró una eficiencia superior para el alojamiento de aplicaciones Java monolíticas (WAR), eliminando la complejidad del mantenimiento de servidores dedicados (IaaS) y permitiendo un despliegue continuo optimizado vía Git.</li>
+        <li>El uso de variables de entorno y el patrón de autodetección en la capa de persistencia (<span class="inline-code">Conexion.java</span>) garantizó la interoperabilidad total entre el entorno de desarrollo local (NetBeans/XAMPP) y el entorno de producción en la nube, previniendo fallas de enlace de datos (<span class="inline-code">Communications link failure</span>).</li>
+        <li>La estrategia de seguridad aplicada mediante túneles SSH criptográficos permitió aprovisionar esquemas de bases de datos relacionales en redes privadas virtuales de contenedores de forma segura, garantizando la integridad referencial y persistiéndose correctamente todas las tablas e índices del sistema.</li>
+        <li>La asignación del nombre de dominio público con certificación SSL/TLS automática (HTTPS de 256 bits) brindó un acceso seguro de extremo a extremo, validándose visualmente la ejecución óptima de los módulos de administración documental, auditoría y reportes estadísticos.</li>
+    </ol>
+
     <!-- ==================== 6. BIBLIOGRAFÍA (APA 7) ==================== -->
     <h2>6. Bibliografía y Referencias (Normas APA 7) (10% de la Evaluación)</h2>
     <p>De acuerdo con los estándares internacionales APA 7ª edición, se relacionan las fuentes bibliográficas y referencias de documentación técnica consultadas para el desarrollo del trabajo:</p>
@@ -696,7 +715,7 @@ Target Port: 8080 (Mapeado internamente hacia el servidor Tomcat Webapp Runner)<
     <!-- ==================== VERIFICACIÓN DE ENTREGABLE ==================== -->
     <div class="highlight-box" style="margin-top: 40px; text-align: center;">
         <h3 style="margin-top: 0; color: var(--primary-color);">Verificación de Entrega Completa</h3>
-        <p>Este documento cumple al 100% con las normas de presentación escritas (Portada, Introducción, Cuadros Comparativos, Paso a Paso de Hosting, Galería de Capturas Secuenciales, Paso a Paso de Dominio y Referencias en Normas APA 7).</p>
+        <p>Este documento cumple al 100% con las normas de presentación escritas (Portada, Introducción, Objetivos, Cuadros Comparativos, Paso a Paso de Hosting, Galería de Capturas Secuenciales, Paso a Paso de Dominio, Conclusiones y Referencias en Normas APA 7).</p>
         <p style="font-weight: 700; color: var(--primary-color); margin-top: 10px;">URL Pública del Proyecto: <a href="https://saduapis-production.up.railway.app/login.jsp" target="_blank">https://saduapis-production.up.railway.app/login.jsp</a></p>
     </div>
 

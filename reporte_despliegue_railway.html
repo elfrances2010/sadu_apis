@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía y Reporte de Despliegue - SADU APIs en Railway</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0b0f19;
+            --bg-card: rgba(22, 27, 46, 0.75);
+            --bg-card-border: rgba(255, 255, 255, 0.1);
+            --primary: #6366f1;
+            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+            --accent: #06b6d4;
+            --accent-glow: rgba(6, 182, 212, 0.15);
+            --success: #10b981;
+            --text-title: #f8fafc;
+            --text-body: #94a3b8;
+            --text-muted: #64748b;
+            --code-bg: #030712;
+            --code-border: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(217, 70, 239, 0.12) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-body);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2.5rem;
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--bg-card-border);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.75rem;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+        }
+
+        .badge-url {
+            display: inline-block;
+            margin-top: 1.25rem;
+            padding: 0.6rem 1.25rem;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--success);
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .badge-url:hover {
+            background: rgba(16, 185, 129, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .step-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--bg-card-border);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: border-color 0.3s ease;
+        }
+
+        .step-card:hover {
+            border-color: rgba(99, 102, 241, 0.4);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .step-number {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: var(--primary-gradient);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .step-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.4rem;
+            color: var(--text-title);
+            font-weight: 600;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        ul, ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        li {
+            margin-bottom: 0.4rem;
+        }
+
+        .code-block {
+            background-color: var(--code-bg);
+            border: 1px solid var(--code-border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        pre {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            color: #e2e8f0;
+            line-height: 1.5;
+        }
+
+        .inline-code {
+            font-family: 'Fira Code', monospace;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 0.2rem 0.4rem;
+            border-radius: 6px;
+            color: var(--accent);
+            font-size: 0.9em;
+        }
+
+        .alert-box {
+            background: var(--accent-glow);
+            border-left: 4px solid var(--accent);
+            padding: 1rem 1.25rem;
+            border-radius: 0 12px 12px 0;
+            margin: 1rem 0;
+            color: #e2e8f0;
+        }
+
+        .credentials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .cred-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 1rem;
+            border-radius: 12px;
+        }
+
+        .cred-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .cred-value {
+            font-family: 'Fira Code', monospace;
+            color: var(--text-title);
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Reporte Técnico de Despliegue</h1>
+        <p class="subtitle">Guía Paso a Paso del Proyecto <strong>SADU APIs</strong> en <strong>Railway Cloud</strong></p>
+        <a href="https://saduapis-production.up.railway.app/login.jsp" target="_blank" class="badge-url">
+            🌐 Acceder a la App: https://saduapis-production.up.railway.app/login.jsp
+        </a>
+    </header>
+
+    <!-- Resumen -->
+    <div class="step-card">
+        <div class="step-header">
+            <div class="step-number">✓</div>
+            <div class="step-title">Resumen del Proyecto</div>
+        </div>
+        <p>El proyecto <strong>sadu_apis</strong> es una aplicación Java Web empresarial basada en <strong>Servlets</strong> y <strong>JSP</strong>, empaquetada como archivo WAR con Maven. Fue configurada exitosamente para ejecutarse en la infraestructura en la nube de <strong>Railway</strong> junto a una base de datos <strong>MySQL</strong> dedicada.</p>
+        
+        <div class="credentials-grid">
+            <div class="cred-item">
+                <div class="cred-label">Servidor Cloud</div>
+                <div class="cred-value">Railway (Nixpacks)</div>
+            </div>
+            <div class="cred-item">
+                <div class="cred-label">Contenedor Web</div>
+                <div class="cred-value">Tomcat Webapp Runner</div>
+            </div>
+            <div class="cred-item">
+                <div class="cred-label">Base de Datos</div>
+                <div class="cred-value">MySQL 8.0 (Railway)</div>
+            </div>
+            <div class="cred-item">
+                <div class="cred-label">Usuario Admin</div>
+                <div class="cred-value">scastro95@gmail.com</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Paso 1 -->
+    <div class="step-card">
+        <div class="step-header">
+            <div class="step-number">1</div>
+            <div class="step-title">Gestión de Archivos Temporales (.gitignore)</div>
+        </div>
+        <p>Se confirmó que la carpeta <span class="inline-code">target/</span> estuviera ignorada en el control de versiones para evitar subir binarios compilados locales a GitHub. Railway compila el proyecto automáticamente desde el código fuente.</p>
+        <div class="code-block">
+<pre># Contenido del archivo .gitignore
+target/
+scratch/</pre>
+        </div>
+    </div>
+
+    <!-- Paso 2 -->
+    <div class="step-card">
+        <div class="step-header">
+            <div class="step-number">2</div>
+            <div class="step-title">Creación del Archivo de Arranque (Procfile)</div>
+        </div>
+        <p>Se creó el archivo <span class="inline-code">Procfile</span> en la raíz del proyecto para indicarle a Railway cómo ejecutar el paquete WAR usando <span class="inline-code">webapp-runner.jar</span> y enlazando el puerto dinámico <span class="inline-code">$PORT</span> que asigna la nube.</p>
+        <div class="code-block">
+<pre># Contenido de Procfile
+web: java $JAVA_OPTS -jar target/webapp-runner.jar --port $PORT target/sadu_apis.war</pre>
+        </div>
+    </div>
+
+    <!-- Paso 3 -->
+    <div class="step-card">
+        <div class="step-header">
+            <div class="step-number">3</div>
+            <div class="step-title">Detección Automática de Base de Datos (Conexion.java)</div>
+        </div>
+        <p>Se actualizó la clase Java <span class="inline-code">com.sadu.config.Conexion</span> para que detecte dinámicamente si se ejecuta en modo <strong>desarrollo local (NetBeans)</strong> o en la <strong>nube (Railway)</strong> evaluando las variables de entorno <span class="inline-code">DB_*</span> y <span class="inline-code">MYSQL*</span>.</p>
+        <div class="code-block">
+<pre>package com.sadu.config;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+
+public class Conexion {
+    private static final String URL_LOCAL = "jdbc:mysql://localhost:3306/sadu_apis?useSSL=false&serverTimezone=UTC";
+    private static final String USER_LOCAL = "root";
+    private static final String PASSWORD_LOCAL = "";
+
+    public static Connection getConnection() throws Exception {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+
+        String url  = System.getenv("DB_URL");
+        String user = System.getenv("DB_USER");
+        String pass = System.getenv("DB_PASSWORD");
+
+        if (url == null || url.trim().isEmpty()) {
+            String host = System.getenv("MYSQLHOST");
+            String port = System.getenv("MYSQLPORT");
+            String db   = System.getenv("MYSQLDATABASE");
+
+            if (host != null && !host.trim().isEmpty() && db != null && !db.trim().isEmpty()) {
+                url  = "jdbc:mysql://" + host + ":" + (port != null ? port : "3306") + "/" + db + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+                user = System.getenv("MYSQLUSER") != null ? System.getenv("MYSQLUSER") : USER_LOCAL;
+                pass = System.getenv("MYSQLPASSWORD") != null ? System.getenv("MYSQLPASSWORD") : PASSWORD_LOCAL;
+            } else {
+                url  = URL_LOCAL;
+                user = USER_LOCAL;
+                pass = PASSWORD_LOCAL;
+            }
+        }
+
+        return DriverManager.getConnection(url, user, pass);
+    }
+}</pre>
+        </div>
+    </div>
+
+    <!-- Paso 4 -->
+    <div class="step-card">
+        <div class="step-header">
+            <div class="step-number">4</div>
+            <div class="step-title">Autenticación y Vinculación con Railway CLI</div>
+        </div>
+        <p>Se utilizó la CLI oficial de Railway para autenticar la cuenta de usuario y vincular el directorio local directamente con el proyecto activo <span class="inline-code">stunning-truth</span>.</p>
+        <div class="code-block">
+<pre># 1. Iniciar sesión en Railway desde la consola
+npx @railway/cli login
+
+# 2. Vincular la carpeta local al proyecto stunning-truth
+npx @railway/cli link --project stunning-truth</pre>
+        </div>
+    </div>
+
+    <!-- Paso 5 -->
+    <div class="step-card">
+        <div class="step-header">
+            <div class="step-number">5</div>
+            <div class="step-title">Configuración de Variables de Entorno en Railway</div>
+        </div>
+        <p>Se configuraron de manera automatizada las variables de conexión a la base de datos MySQL en el servicio web <span class="inline-code">sadu_apis</span>.</p>
+        <div class="code-block">
+<pre># Configuración de variables vía CLI
+npx @railway/cli variable set --service sadu_apis \
+  "DB_USER=root" \
+  "DB_PASSWORD=IsHyCDSDTwwatejEkulUENKjjbCIBZxo" \
+  "MYSQLHOST=mysql.railway.internal" \
+  "MYSQLPORT=3306" \
+  "MYSQLUSER=root" \
+  "MYSQLPASSWORD=IsHyCDSDTwwatejEkulUENKjjbCIBZxo" \
+  "MYSQLDATABASE=railway" \
+  "DB_URL=jdbc:mysql://mysql.railway.internal:3306/railway?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"</pre>
+        </div>
+    </div>
+
+    <!-- Paso 6 -->
+    <div class="step-card">
+        <div class="step-header">
+            <div class="step-number">6</div>
+            <div class="step-title">Túnel SSH e Importación del Script SQL</div>
+        </div>
+        <p>Se generó una clave SSH registrada en Railway para abrir un túnel de datos seguro e importar el script completo <span class="inline-code">sadu_apis.sql</span> con la estructura de tablas e información inicial.</p>
+        <div class="code-block">
+<pre># 1. Generar e importar clave SSH en Railway
+ssh-keygen -t ed25519 -N "" -f "C:\Users\elfra\.ssh\id_ed25519"
+npx @railway/cli ssh keys add
+
+# 2. Abrir túnel seguro a la base de datos en el puerto 3307
+npx @railway/cli connect MySQL --tunnel-only -P 3307
+
+# 3. Ejecutar importación del archivo SQL
+node scratch/import.js</pre>
+        </div>
+        <div class="alert-box">
+            📌 <strong>Tablas Creadas e Importadas:</strong> <span class="inline-code">roles</span>, <span class="inline-code">usuarios</span>, <span class="inline-code">documentos</span>, <span class="inline-code">comunicaciones</span>, <span class="inline-code">logs_auditoria</span>, <span class="inline-code">mensajes_chat</span>.
+        </div>
+    </div>
+
+    <!-- Paso 7 -->
+    <div class="step-card">
+        <div class="step-header">
+            <div class="step-number">7</div>
+            <div class="step-title">Generación de Dominio y Verificación Final</div>
+        </div>
+        <p>Se asignó el dominio público HTTPS en el puerto 8080 y se forzó el re-despliegue del servicio.</p>
+        <div class="code-block">
+<pre># Redesplegar servicio en Railway
+npx @railway/cli redeploy --service sadu_apis --yes</pre>
+        </div>
+        <p>La aplicación está completamente operativa en la siguiente URL:</p>
+        <div class="credentials-grid">
+            <div class="cred-item">
+                <div class="cred-label">URL del Login</div>
+                <div class="cred-value"><a href="https://saduapis-production.up.railway.app/login.jsp" target="_blank" style="color: var(--accent);">saduapis-production.up.railway.app/login.jsp</a></div>
+            </div>
+            <div class="cred-item">
+                <div class="cred-label">Usuario Admin</div>
+                <div class="cred-value">scastro95@gmail.com</div>
+            </div>
+            <div class="cred-item">
+                <div class="cred-label">Contraseña</div>
+                <div class="cred-value">kamilo</div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Reporte generado automáticamente para el proyecto <strong>SADU APIs</strong> — 2026</p>
+    </footer>
+</div>
+
+</body>
+</html>

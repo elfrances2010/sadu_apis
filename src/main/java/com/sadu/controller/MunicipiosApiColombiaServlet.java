@@ -35,7 +35,7 @@ import org.json.JSONObject;
  *   GET  → recibe el parámetro "idDepartamento" y muestra sus municipios.
  *   POST → delega al GET (permite formularios con method="post").
  */
-@WebServlet(name = "MunicipiosApiColombiaServlet", urlPatterns = {"/MunicipiosApiColombiaServlet"})
+@WebServlet(name = "MunicipiosApiColombiaServlet", urlPatterns = {"/MunicipiosApiColombiaServlet", "/municipios"})
 public class MunicipiosApiColombiaServlet extends HttpServlet {
 
     /**

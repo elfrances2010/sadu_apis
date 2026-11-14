@@ -34,7 +34,7 @@ import javax.servlet.http.HttpServletResponse;
  * Adapta el paquete, la conexión y los imports javax/jakarta igual que en
  * SincronizacionTerritorialServlet.
  */
-@WebServlet(name = "TerritorioLocalServlet", urlPatterns = {"/TerritorioLocalServlet"})
+@WebServlet(name = "TerritorioLocalServlet", urlPatterns = {"/TerritorioLocalServlet", "/territorioLocal"})
 public class TerritorioLocalServlet extends HttpServlet {
 
     private static final String DB_URL =

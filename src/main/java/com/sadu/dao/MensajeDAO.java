@@ -5,69 +5,55 @@ import com.sadu.modelo.Mensaje;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Clase DAO encargada de todas las operaciones de base de datos
- * relacionadas con la tabla mensajes_chat.
- *
- * Operaciones disponibles:
- *   - enviarMensaje()   → INSERT de un nuevo mensaje
- *   - listarMensajes()  → SELECT de todos los mensajes con nombre del usuario
- *   - marcarLeido()     → UPDATE del estado a LEIDO
+ * DAO para la gestion de mensajes en el chat empresarial SADU.
  */
 public class MensajeDAO {
 
-    /**
-     * Guarda un nuevo mensaje en la tabla mensajes_chat.
-     *
-     * @param mensaje Objeto Mensaje con los datos a insertar
-     * @return true si se insertó correctamente, false si ocurrió un error
-     */
     public boolean enviarMensaje(Mensaje mensaje) {
         Connection con = null;
         PreparedStatement ps = null;
 
         try {
-            // Obtener conexión a la base de datos
             con = Conexion.getConnection();
 
-            // SQL para insertar el mensaje
-            // Estado por defecto es PENDIENTE (definido en la tabla)
-            String sql = "INSERT INTO mensajes_chat (id_usuario, asunto, mensaje) "
-                       + "VALUES (?, ?, ?)";
+            String sql = "INSERT INTO mensajes_chat (id_usuario, id_receptor, asunto, mensaje, tipo, url_adjunto, editado) "
+                       + "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
             ps = con.prepareStatement(sql);
             ps.setInt(1, mensaje.getIdUsuario());
-            ps.setString(2, mensaje.getAsunto());
-            ps.setString(3, mensaje.getMensaje());
 
-            // Ejecutar inserción y verificar si afectó alguna fila
-            int filas = ps.executeUpdate();
-            return filas > 0;
+            if (mensaje.getIdReceptor() != null && mensaje.getIdReceptor() > 0) {
+                ps.setInt(2, mensaje.getIdReceptor());
+            } else {
+                ps.setNull(2, Types.INTEGER);
+            }
+
+            ps.setString(3, mensaje.getAsunto() != null ? mensaje.getAsunto() : "Chat");
+            ps.setString(4, mensaje.getMensaje() != null ? mensaje.getMensaje() : "");
+            ps.setString(5, mensaje.getTipo() != null ? mensaje.getTipo() : "TEXTO");
+            ps.setString(6, mensaje.getUrlAdjunto());
+            ps.setBoolean(7, mensaje.isEditado());
+
+            return ps.executeUpdate() > 0;
 
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         } finally {
-            // Cerrar recursos siempre, aunque ocurra un error
-            try {
-                if (ps != null) ps.close();
-                if (con != null) con.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            cerrar(null, ps, con);
         }
     }
 
-    /**
-     * Obtiene todos los mensajes del chat ordenados del más reciente al más antiguo.
-     * Hace un JOIN con la tabla usuarios para obtener el nombre completo del remitente.
-     *
-     * @return Lista de objetos Mensaje con todos los datos
-     */
     public List<Mensaje> listarMensajes() {
+        return listarMensajes(0, null);
+    }
+
+    public List<Mensaje> listarMensajes(int usuarioId, Integer receptorId) {
         List<Mensaje> lista = new ArrayList<>();
         Connection con = null;
         PreparedStatement ps = null;
@@ -76,75 +62,126 @@ public class MensajeDAO {
         try {
             con = Conexion.getConnection();
 
-            // JOIN con usuarios para traer el nombre completo del remitente
-            String sql = "SELECT m.id_mensaje, m.id_usuario, u.nombre_completo, "
-                       + "       m.asunto, m.mensaje, m.estado, m.fecha_envio "
-                       + "FROM mensajes_chat m "
-                       + "INNER JOIN usuarios u ON m.id_usuario = u.id_usuario "
-                       + "ORDER BY m.fecha_envio DESC";
+            String sql;
+            if (receptorId != null && receptorId > 0) {
+                sql = "SELECT m.id_mensaje, m.id_usuario, u.nombre_completo AS remitente_nombre, "
+                    + "       m.id_receptor, u2.nombre_completo AS receptor_nombre, "
+                    + "       m.asunto, m.mensaje, m.tipo, m.url_adjunto, m.editado, m.estado, m.fecha_envio "
+                    + "FROM mensajes_chat m "
+                    + "INNER JOIN usuarios u ON m.id_usuario = u.id_usuario "
+                    + "LEFT JOIN usuarios u2 ON m.id_receptor = u2.id_usuario "
+                    + "WHERE (m.id_usuario = ? AND m.id_receptor = ?) "
+                    + "   OR (m.id_usuario = ? AND m.id_receptor = ?) "
+                    + "ORDER BY m.fecha_envio DESC LIMIT 50";
+            } else {
+                sql = "SELECT m.id_mensaje, m.id_usuario, u.nombre_completo AS remitente_nombre, "
+                    + "       m.id_receptor, NULL AS receptor_nombre, "
+                    + "       m.asunto, m.mensaje, m.tipo, m.url_adjunto, m.editado, m.estado, m.fecha_envio "
+                    + "FROM mensajes_chat m "
+                    + "INNER JOIN usuarios u ON m.id_usuario = u.id_usuario "
+                    + "WHERE m.id_receptor IS NULL "
+                    + "ORDER BY m.fecha_envio DESC LIMIT 50";
+            }
 
             ps = con.prepareStatement(sql);
+            if (receptorId != null && receptorId > 0) {
+                ps.setInt(1, usuarioId);
+                ps.setInt(2, receptorId);
+                ps.setInt(3, receptorId);
+                ps.setInt(4, usuarioId);
+            }
+
             rs = ps.executeQuery();
 
-            // Recorrer resultados y llenar la lista
             while (rs.next()) {
                 Mensaje m = new Mensaje();
                 m.setIdMensaje(rs.getInt("id_mensaje"));
                 m.setIdUsuario(rs.getInt("id_usuario"));
-                m.setNombreUsuario(rs.getString("nombre_completo"));
+                m.setNombreUsuario(rs.getString("remitente_nombre"));
+                
+                int rec = rs.getInt("id_receptor");
+                if (!rs.wasNull()) {
+                    m.setIdReceptor(rec);
+                    m.setNombreReceptor(rs.getString("receptor_nombre"));
+                }
+                
                 m.setAsunto(rs.getString("asunto"));
                 m.setMensaje(rs.getString("mensaje"));
+                
+                String t = rs.getString("tipo");
+                m.setTipo(t != null ? t : "TEXTO");
+                m.setUrlAdjunto(rs.getString("url_adjunto"));
+                m.setEditado(rs.getBoolean("editado"));
                 m.setEstado(rs.getString("estado"));
                 m.setFechaEnvio(rs.getTimestamp("fecha_envio"));
+                
                 lista.add(m);
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            try {
-                if (rs != null) rs.close();
-                if (ps != null) ps.close();
-                if (con != null) con.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            cerrar(rs, ps, con);
         }
 
         return lista;
     }
 
-    /**
-     * Actualiza el estado de un mensaje a LEIDO.
-     * Se llama cuando un usuario abre o visualiza el mensaje.
-     *
-     * @param idMensaje ID del mensaje a marcar como leído
-     * @return true si se actualizó correctamente, false si ocurrió un error
-     */
-    public boolean marcarLeido(int idMensaje) {
+    public boolean editarMensaje(int idMensaje, int idUsuario, String nuevoTexto) {
         Connection con = null;
         PreparedStatement ps = null;
 
         try {
             con = Conexion.getConnection();
 
-            String sql = "UPDATE mensajes_chat SET estado = 'LEIDO' WHERE id_mensaje = ?";
+            String sql = "UPDATE mensajes_chat SET mensaje = ?, editado = 1 WHERE id_mensaje = ? AND id_usuario = ?";
             ps = con.prepareStatement(sql);
-            ps.setInt(1, idMensaje);
+            ps.setString(1, nuevoTexto);
+            ps.setInt(2, idMensaje);
+            ps.setInt(3, idUsuario);
 
-            int filas = ps.executeUpdate();
-            return filas > 0;
+            return ps.executeUpdate() > 0;
 
         } catch (Exception e) {
             e.printStackTrace();
             return false;
         } finally {
-            try {
-                if (ps != null) ps.close();
-                if (con != null) con.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            cerrar(null, ps, con);
         }
+    }
+
+    public boolean eliminarMensaje(int idMensaje, int idUsuario, boolean esAdmin) {
+        Connection con = null;
+        PreparedStatement ps = null;
+
+        try {
+            con = Conexion.getConnection();
+
+            String sql;
+            if (esAdmin) {
+                sql = "DELETE FROM mensajes_chat WHERE id_mensaje = ?";
+                ps = con.prepareStatement(sql);
+                ps.setInt(1, idMensaje);
+            } else {
+                sql = "DELETE FROM mensajes_chat WHERE id_mensaje = ? AND id_usuario = ?";
+                ps = con.prepareStatement(sql);
+                ps.setInt(1, idMensaje);
+                ps.setInt(2, idUsuario);
+            }
+
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            cerrar(null, ps, con);
+        }
+    }
+
+    private void cerrar(ResultSet rs, PreparedStatement ps, Connection con) {
+        try { if (rs  != null) rs.close();  } catch (Exception e) { }
+        try { if (ps  != null) ps.close();  } catch (Exception e) { }
+        try { if (con != null) con.close(); } catch (Exception e) { }
     }
 }

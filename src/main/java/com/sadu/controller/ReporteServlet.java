@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletResponse;
  *   GET  → carga todos los datos y muestra reportes.jsp
  *   POST → delega al GET (cumple requisito de ambos métodos HTTP)
  */
-@WebServlet(name = "ReporteServlet", urlPatterns = {"/reportes"})
+@WebServlet(name = "ReporteServlet", urlPatterns = {"/reportes", "/ReporteServlet"})
 public class ReporteServlet extends HttpServlet {
 
     @Override

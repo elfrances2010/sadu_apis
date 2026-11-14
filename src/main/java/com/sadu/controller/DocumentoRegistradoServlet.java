@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletResponse;
  *   GET  (sin accion)     → Redirige a listar por defecto
  *   POST → delega al GET (cumple requisito de ambos métodos HTTP)
  */
-@WebServlet(name = "DocumentoRegistradoServlet", urlPatterns = {"/documentosRegistrados"})
+@WebServlet(name = "DocumentoRegistradoServlet", urlPatterns = {"/documentosRegistrados", "/DocumentoRegistradoServlet"})
 public class DocumentoRegistradoServlet extends HttpServlet {
 
     /**

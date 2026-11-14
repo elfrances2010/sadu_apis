@@ -79,6 +79,11 @@ public class Documento {
     public String getRutaArchivo()         { return rutaArchivo; }
     public void setRutaArchivo(String v)   { this.rutaArchivo = v; }
 
+    // Firma digital de preservación (Hash SHA-256)
+    private String hashSha256;
+    public String getHashSha256()          { return hashSha256; }
+    public void setHashSha256(String v)    { this.hashSha256 = v; }
+
     public String getQrCodigo()            { return qrCodigo; }
     public void setQrCodigo(String v)      { this.qrCodigo = v; }
 

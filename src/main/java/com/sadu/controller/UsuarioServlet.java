@@ -12,80 +12,44 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-/**
- * ════════════════════════════════════════════════════════════════
- * UsuarioServlet — Controlador del módulo de Usuarios SADU
- * ════════════════════════════════════════════════════════════════
- *
- * Gestiona todas las operaciones del módulo de Gestión de Usuarios.
- * Solo los ADMINISTRADORES (id_rol = 1) pueden acceder a este módulo.
- *
- * Acciones GET:
- *   ?accion=listar         → Lista todos los usuarios con su rol
- *   ?accion=buscar         → Filtra usuarios por nombre, rol y estado
- *   ?accion=editar&id=X    → Carga el formulario de edición con datos del usuario X
- *   ?accion=cambiarEstado  → Activa o desactiva un usuario
- *   ?accion=cambiarRol     → Cambia el rol de un usuario
- *   (sin accion)           → Redirige a listar
- *
- * Acciones POST:
- *   ?accion=registrar      → Registra un nuevo usuario
- *   ?accion=actualizar     → Guarda los cambios de edición de un usuario
- *
- * Cada operación exitosa registra un log automático en logs_auditoria.
- *
- * URL de acceso: /usuarios
- */
 @WebServlet(name = "UsuarioServlet", urlPatterns = {"/usuarios"})
 public class UsuarioServlet extends HttpServlet {
 
-    /**
-     * Método GET: maneja todas las operaciones de lectura y cambios simples.
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // ── 1. Validar sesión activa ──────────────────────────────
         HttpSession sesion = request.getSession(false);
         if (sesion == null || sesion.getAttribute("nombreUsuario") == null) {
             response.sendRedirect("login.jsp");
             return;
         }
 
-        // ── 2. Validar que sea ADMINISTRADOR (id_rol = 1) ─────────
         Integer rolUsuario = (Integer) sesion.getAttribute("rolUsuario");
         if (rolUsuario == null || rolUsuario != 1) {
-            // Sin permisos → redirigir al dashboard
             response.sendRedirect("dashboard.jsp?accesoDenegado=1");
             return;
         }
 
-        // ── 3. Determinar acción ──────────────────────────────────
         String accion = request.getParameter("accion");
         if (accion == null) accion = "listar";
 
         switch (accion) {
-
             case "buscar":
                 buscarUsuarios(request, response);
                 break;
-
             case "editar":
-                // Cargar el formulario de edición con los datos del usuario
                 cargarFormularioEdicion(request, response);
                 break;
-
             case "cambiarEstado":
-                // Activar o desactivar un usuario directamente desde la tabla
                 cambiarEstado(request, response, sesion);
                 break;
-
             case "cambiarRol":
-                // Cambiar el rol de un usuario directamente desde la tabla
                 cambiarRol(request, response, sesion);
                 break;
-
+            case "forzarCambioClave":
+                forzarCambioClave(request, response, sesion);
+                break;
             case "listar":
             default:
                 listarUsuarios(request, response);
@@ -93,47 +57,39 @@ public class UsuarioServlet extends HttpServlet {
         }
     }
 
-    /**
-     * Método POST: maneja el registro de nuevos usuarios y la edición.
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // ── 1. Validar sesión ─────────────────────────────────────
         HttpSession sesion = request.getSession(false);
         if (sesion == null || sesion.getAttribute("nombreUsuario") == null) {
             response.sendRedirect("login.jsp");
             return;
         }
 
-        // ── 2. Validar que sea ADMINISTRADOR ──────────────────────
         Integer rolUsuario = (Integer) sesion.getAttribute("rolUsuario");
         if (rolUsuario == null || rolUsuario != 1) {
             response.sendRedirect("dashboard.jsp?accesoDenegado=1");
             return;
         }
 
-        // ── 3. Determinar acción POST ─────────────────────────────
         String accion = request.getParameter("accion");
 
         if ("registrar".equals(accion)) {
             registrarUsuario(request, response, sesion);
         } else if ("actualizar".equals(accion)) {
             actualizarUsuario(request, response, sesion);
+        } else if ("cambiarEstado".equals(accion)) {
+            cambiarEstado(request, response, sesion);
+        } else if ("cambiarRol".equals(accion)) {
+            cambiarRol(request, response, sesion);
+        } else if ("forzarCambioClave".equals(accion)) {
+            forzarCambioClave(request, response, sesion);
         } else {
             response.sendRedirect("usuarios?accion=listar");
         }
     }
 
-    // ════════════════════════════════════════════════════════════
-    // MÉTODOS PRIVADOS — uno por cada operación
-    // ════════════════════════════════════════════════════════════
-
-    /**
-     * Lista todos los usuarios del sistema con su nombre de rol.
-     * Envía la lista al JSP usuarios.jsp para su visualización.
-     */
     private void listarUsuarios(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -147,19 +103,13 @@ public class UsuarioServlet extends HttpServlet {
         request.getRequestDispatcher("usuarios.jsp").forward(request, response);
     }
 
-    /**
-     * Busca usuarios aplicando filtros de nombre, rol y estado.
-     * Mantiene los valores del formulario después de la búsqueda.
-     */
     private void buscarUsuarios(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Capturar filtros del formulario
         String nombre    = request.getParameter("busNombre");
         String idRolStr  = request.getParameter("busRol");
         String estado    = request.getParameter("busEstado");
 
-        // Convertir el rol a entero (0 = sin filtro)
         int idRol = 0;
         if (idRolStr != null && !idRolStr.trim().isEmpty()) {
             try { idRol = Integer.parseInt(idRolStr); } catch (NumberFormatException e) { idRol = 0; }
@@ -173,7 +123,6 @@ public class UsuarioServlet extends HttpServlet {
         request.setAttribute("totalResultados", lista.size());
         request.setAttribute("modoEdicion", false);
 
-        // Reenviar valores para conservar los campos llenos
         request.setAttribute("busNombre", nombre  != null ? nombre  : "");
         request.setAttribute("busRol",    idRolStr != null ? idRolStr : "");
         request.setAttribute("busEstado", estado   != null ? estado   : "");
@@ -181,10 +130,6 @@ public class UsuarioServlet extends HttpServlet {
         request.getRequestDispatcher("usuarios.jsp").forward(request, response);
     }
 
-    /**
-     * Carga el formulario de edición con los datos del usuario seleccionado.
-     * El ID del usuario viene por parámetro GET (?accion=editar&id=X).
-     */
     private void cargarFormularioEdicion(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -198,129 +143,145 @@ public class UsuarioServlet extends HttpServlet {
         try {
             int id = Integer.parseInt(idStr);
             UsuarioDAO dao = new UsuarioDAO();
+            Usuario u = dao.obtenerPorId(id);
 
-            // Obtener el usuario por ID para precargar el formulario
-            Usuario usuario = dao.obtenerPorId(id);
+            if (u != null) {
+                request.setAttribute("usuarioEdicion", u);
+                request.setAttribute("modoEdicion", true);
 
-            if (usuario == null) {
-                // Usuario no encontrado → volver al listado con mensaje
-                request.setAttribute("error", "No se encontró el usuario con ID: " + id);
-                listarUsuarios(request, response);
-                return;
+                List<Usuario> lista = dao.listarUsuarios();
+                request.setAttribute("listaUsuarios", lista);
+                request.setAttribute("busquedaActiva", false);
+
+                request.getRequestDispatcher("usuarios.jsp").forward(request, response);
+            } else {
+                response.sendRedirect("usuarios?accion=listar");
             }
-
-            // Enviar el usuario al JSP para precargar el formulario de edición
-            request.setAttribute("usuarioEditar", usuario);
-            request.setAttribute("listaUsuarios", dao.listarUsuarios());
-            request.setAttribute("modoEdicion", true);
-            request.setAttribute("busquedaActiva", false);
-
-            request.getRequestDispatcher("usuarios.jsp").forward(request, response);
 
         } catch (NumberFormatException e) {
             response.sendRedirect("usuarios?accion=listar");
         }
     }
 
-    /**
-     * Cambia el estado de un usuario entre ACTIVO e INACTIVO.
-     * Se llama desde un botón en la tabla de usuarios.
-     *
-     * AUDITORÍA: registra log con el cambio de estado realizado.
-     */
-    private void cambiarEstado(HttpServletRequest request, HttpServletResponse response,
-                                HttpSession sesion) throws IOException {
+    private void cambiarEstado(HttpServletRequest request, HttpServletResponse response, HttpSession sesion)
+            throws ServletException, IOException {
 
         String idStr       = request.getParameter("id");
+        if (idStr == null) idStr = request.getParameter("idUsuario");
         String nuevoEstado = request.getParameter("estado");
+        String origen      = request.getParameter("origen");
+
+        int idAdmin   = (int) sesion.getAttribute("idUsuario");
+        String usernameAdmin = (String) sesion.getAttribute("username");
 
         if (idStr != null && nuevoEstado != null) {
             try {
-                int id          = Integer.parseInt(idStr);
-                int idAdmin     = (int)    sesion.getAttribute("idUsuario");
-                String username = (String) sesion.getAttribute("username");
-
+                int idUsuario = Integer.parseInt(idStr);
                 UsuarioDAO dao = new UsuarioDAO();
 
-                // Obtener el nombre del usuario que se modifica (para el log)
-                Usuario u = dao.obtenerPorId(id);
-                boolean actualizado = dao.cambiarEstado(id, nuevoEstado);
+                boolean ok = dao.cambiarEstado(idUsuario, nuevoEstado);
 
-                if (actualizado && u != null) {
-                    // ── AUDITORÍA — Cambio de estado ──────────────
-                    
+                if (ok) {
                     Auditoria.registrar(
                         idAdmin,
                         "CAMBIAR_ESTADO_USUARIO",
-                        "Admin '" + username + "' cambió estado del usuario '" +
-                            u.getUsername() + "' → " + nuevoEstado
+                        "Admin '" + usernameAdmin + "' cambio el estado del usuario ID: " +
+                            idUsuario + " a '" + nuevoEstado + "'"
                     );
                 }
 
             } catch (NumberFormatException e) {
-                // ID inválido, ignorar
+                e.printStackTrace();
             }
         }
 
-        response.sendRedirect("usuarios?accion=listar&exito=3");
+        if ("consultas".equals(origen)) {
+            response.sendRedirect("consultas?tipo=usuarios&exito=1");
+        } else {
+            response.sendRedirect("usuarios?accion=listar&exito=1");
+        }
     }
 
-    /**
-     * Cambia el rol de un usuario directamente desde la tabla.
-     * Solo el administrador puede hacer esto.
-     *
-     * AUDITORÍA: registra log con el cambio de rol realizado.
-     */
-    private void cambiarRol(HttpServletRequest request, HttpServletResponse response,
-                             HttpSession sesion) throws IOException {
+    private void cambiarRol(HttpServletRequest request, HttpServletResponse response, HttpSession sesion)
+            throws ServletException, IOException {
 
-        String idStr     = request.getParameter("id");
-        String nuevoRolStr = request.getParameter("rol");
+        String idStr    = request.getParameter("id");
+        if (idStr == null) idStr = request.getParameter("idUsuario");
+        String rolStr   = request.getParameter("rol");
+        if (rolStr == null) rolStr = request.getParameter("idRol");
+        String origen   = request.getParameter("origen");
 
-        if (idStr != null && nuevoRolStr != null) {
+        int idAdmin   = (int) sesion.getAttribute("idUsuario");
+        String usernameAdmin = (String) sesion.getAttribute("username");
+
+        if (idStr != null && rolStr != null) {
             try {
-                int id          = Integer.parseInt(idStr);
-                int nuevoRol    = Integer.parseInt(nuevoRolStr);
-                int idAdmin     = (int)    sesion.getAttribute("idUsuario");
-                String username = (String) sesion.getAttribute("username");
+                int idUsuario = Integer.parseInt(idStr);
+                int nuevoRol  = Integer.parseInt(rolStr);
 
                 UsuarioDAO dao = new UsuarioDAO();
+                boolean ok = dao.cambiarRol(idUsuario, nuevoRol);
 
-                Usuario u = dao.obtenerPorId(id);
-                boolean actualizado = dao.cambiarRol(id, nuevoRol);
-
-                if (actualizado && u != null) {
-                    // ── AUDITORÍA — Cambio de rol ─────────────────
-                    String[] roles = {"", "ADMINISTRADOR", "GESTOR_ARCHIVO", "DEPENDENCIA"};
-                    String nombreNuevoRol = (nuevoRol >= 1 && nuevoRol <= 3) ? roles[nuevoRol] : "ROL-" + nuevoRol;
-
-                    
+                if (ok) {
                     Auditoria.registrar(
                         idAdmin,
                         "CAMBIAR_ROL_USUARIO",
-                        "Admin '" + username + "' cambió rol del usuario '" +
-                            u.getUsername() + "' → " + nombreNuevoRol
+                        "Admin '" + usernameAdmin + "' cambio el rol del usuario ID: " +
+                            idUsuario + " al nuevo rol ID: " + nuevoRol
                     );
                 }
 
             } catch (NumberFormatException e) {
-                // Valores inválidos, ignorar
+                e.printStackTrace();
             }
         }
 
-        response.sendRedirect("usuarios?accion=listar&exito=4");
+        if ("consultas".equals(origen)) {
+            response.sendRedirect("consultas?tipo=usuarios&exito=2");
+        } else {
+            response.sendRedirect("usuarios?accion=listar&exito=2");
+        }
     }
 
-    /**
-     * Registra un nuevo usuario en la base de datos.
-     * Valida campos obligatorios y verifica duplicados antes de guardar.
-     *
-     * AUDITORÍA: registra log con el nombre del usuario creado.
-     */
+    private void forzarCambioClave(HttpServletRequest request, HttpServletResponse response, HttpSession sesion)
+            throws ServletException, IOException {
+
+        String idStr = request.getParameter("id");
+        if (idStr == null) idStr = request.getParameter("idUsuario");
+        String origen = request.getParameter("origen");
+
+        int idAdmin   = (int) sesion.getAttribute("idUsuario");
+        String usernameAdmin = (String) sesion.getAttribute("username");
+
+        if (idStr != null && !idStr.trim().isEmpty()) {
+            try {
+                int idUsuario = Integer.parseInt(idStr);
+                UsuarioDAO dao = new UsuarioDAO();
+                boolean ok = dao.forzarCambioClave(idUsuario, true);
+
+                if (ok) {
+                    Auditoria.registrar(
+                        idAdmin,
+                        "FORZAR_CAMBIO_CLAVE",
+                        "Admin '" + usernameAdmin + "' exigio cambio de clave al usuario ID: " + idUsuario
+                    );
+                }
+
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if ("consultas".equals(origen)) {
+            response.sendRedirect("consultas?tipo=usuarios&exito=3");
+        } else {
+            response.sendRedirect("usuarios?accion=listar&exito=3");
+        }
+    }
+
     private void registrarUsuario(HttpServletRequest request, HttpServletResponse response,
                                    HttpSession sesion) throws ServletException, IOException {
 
-        // ── 1. Capturar datos del formulario ──────────────────────
         String nombre    = request.getParameter("nombreCompleto");
         String correo    = request.getParameter("correo");
         String username  = request.getParameter("username");
@@ -330,7 +291,6 @@ public class UsuarioServlet extends HttpServlet {
         int    idAdmin   = (int)    sesion.getAttribute("idUsuario");
         String usernameAdmin = (String) sesion.getAttribute("username");
 
-        // ── 2. Validar campos obligatorios ────────────────────────
         if (nombre == null || nombre.trim().isEmpty()
                 || correo == null || correo.trim().isEmpty()
                 || username == null || username.trim().isEmpty()
@@ -342,50 +302,44 @@ public class UsuarioServlet extends HttpServlet {
             return;
         }
 
-        // ── 3. Convertir el rol a entero ──────────────────────────
         int idRol;
         try {
             idRol = Integer.parseInt(rolStr);
         } catch (NumberFormatException e) {
-            request.setAttribute("error", "El rol seleccionado no es válido.");
+            request.setAttribute("error", "El rol seleccionado no es v?lido.");
             listarUsuarios(request, response);
             return;
         }
 
         UsuarioDAO dao = new UsuarioDAO();
 
-        // ── 4. Verificar que correo y username no estén duplicados ─
         if (dao.existeCorreo(correo.trim(), 0)) {
-            request.setAttribute("error", "El correo '" + correo.trim() + "' ya está registrado.");
+            request.setAttribute("error", "El correo '" + correo.trim() + "' ya est? registrado.");
             listarUsuarios(request, response);
             return;
         }
 
         if (dao.existeUsername(username.trim(), 0)) {
-            request.setAttribute("error", "El username '" + username.trim() + "' ya está en uso.");
+            request.setAttribute("error", "El username '" + username.trim() + "' ya est? en uso.");
             listarUsuarios(request, response);
             return;
         }
 
-        // ── 5. Construir el objeto Usuario ────────────────────────
         Usuario u = new Usuario();
         u.setNombreCompleto(nombre.trim());
         u.setCorreo(correo.trim().toLowerCase());
         u.setUsername(username.trim().toLowerCase());
-        u.setPassword(password); // En producción se debería hashear
+        u.setPassword(password);
         u.setRolId(idRol);
         u.setEstado(estado != null ? estado : "ACTIVO");
 
-        // ── 6. Guardar en la base de datos ────────────────────────
         boolean guardado = dao.registrarUsuario(u);
 
         if (guardado) {
-            // ── AUDITORÍA — Usuario registrado ────────────────────
-            
             Auditoria.registrar(
                 idAdmin,
                 "REGISTRAR_USUARIO",
-                "Admin '" + usernameAdmin + "' registró al usuario: '" +
+                "Admin '" + usernameAdmin + "' registro al usuario: '" +
                     username.trim() + "' | Correo: " + correo.trim() +
                     " | Rol ID: " + idRol
             );
@@ -397,16 +351,9 @@ public class UsuarioServlet extends HttpServlet {
         }
     }
 
-    /**
-     * Actualiza los datos de un usuario existente (edición).
-     * Valida duplicados de correo y username excluyendo al usuario actual.
-     *
-     * AUDITORÍA: registra log con los campos actualizados.
-     */
     private void actualizarUsuario(HttpServletRequest request, HttpServletResponse response,
                                     HttpSession sesion) throws ServletException, IOException {
 
-        // ── 1. Capturar datos del formulario de edición ───────────
         String idStr     = request.getParameter("idUsuario");
         String nombre    = request.getParameter("nombreCompleto");
         String correo    = request.getParameter("correo");
@@ -415,7 +362,6 @@ public class UsuarioServlet extends HttpServlet {
         int    idAdmin   = (int)    sesion.getAttribute("idUsuario");
         String usernameAdmin = (String) sesion.getAttribute("username");
 
-        // ── 2. Validar campos obligatorios ────────────────────────
         if (idStr == null || nombre == null || nombre.trim().isEmpty()
                 || correo == null || correo.trim().isEmpty()
                 || username == null || username.trim().isEmpty()
@@ -426,33 +372,30 @@ public class UsuarioServlet extends HttpServlet {
             return;
         }
 
-        // ── 3. Convertir IDs a enteros ────────────────────────────
         int idUsuario, idRol;
         try {
             idUsuario = Integer.parseInt(idStr);
             idRol     = Integer.parseInt(rolStr);
         } catch (NumberFormatException e) {
-            request.setAttribute("error", "Datos inválidos.");
+            request.setAttribute("error", "Datos inv?lidos.");
             listarUsuarios(request, response);
             return;
         }
 
         UsuarioDAO dao = new UsuarioDAO();
 
-        // ── 4. Verificar duplicados excluyendo al usuario actual ───
         if (dao.existeCorreo(correo.trim(), idUsuario)) {
-            request.setAttribute("error", "El correo '" + correo.trim() + "' ya está en uso por otro usuario.");
+            request.setAttribute("error", "El correo '" + correo.trim() + "' ya esta en uso por otro usuario.");
             cargarFormularioEdicion(request, response);
             return;
         }
 
         if (dao.existeUsername(username.trim(), idUsuario)) {
-            request.setAttribute("error", "El username '" + username.trim() + "' ya está en uso por otro usuario.");
+            request.setAttribute("error", "El username '" + username.trim() + "' ya esta en uso por otro usuario.");
             cargarFormularioEdicion(request, response);
             return;
         }
 
-        // ── 5. Construir el objeto con los nuevos datos ───────────
         Usuario u = new Usuario();
         u.setIdUsuario(idUsuario);
         u.setNombreCompleto(nombre.trim());
@@ -460,16 +403,13 @@ public class UsuarioServlet extends HttpServlet {
         u.setUsername(username.trim().toLowerCase());
         u.setRolId(idRol);
 
-        // ── 6. Ejecutar la actualización ──────────────────────────
         boolean actualizado = dao.editarUsuario(u);
 
         if (actualizado) {
-            // ── AUDITORÍA — Usuario editado ───────────────────────
-            
             Auditoria.registrar(
                 idAdmin,
                 "EDITAR_USUARIO",
-                "Admin '" + usernameAdmin + "' editó al usuario ID: " + idUsuario +
+                "Admin '" + usernameAdmin + "' edit? al usuario ID: " + idUsuario +
                     " | Nuevo username: '" + username.trim() + "'" +
                     " | Nuevo correo: " + correo.trim() +
                     " | Nuevo rol ID: " + idRol

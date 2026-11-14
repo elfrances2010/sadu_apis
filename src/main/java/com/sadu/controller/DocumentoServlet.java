@@ -24,7 +24,7 @@ import javax.servlet.http.HttpSession;
  *
  * Cada operación registra automáticamente un log en logs_auditoria.
  */
-@WebServlet(name = "DocumentoServlet", urlPatterns = {"/documentos"})
+@WebServlet(name = "DocumentoServlet", urlPatterns = {"/documentos", "/DocumentoServlet"})
 public class DocumentoServlet extends HttpServlet {
 
     /**
@@ -173,6 +173,7 @@ public class DocumentoServlet extends HttpServlet {
         String dependencia = request.getParameter("dependencia");
         String fechaStr    = request.getParameter("fechaDocumento");
         String rutaArchivo = request.getParameter("rutaArchivo");
+        String hashSha256  = request.getParameter("hashSha256");
         String trd         = request.getParameter("trd");
         String estado      = request.getParameter("estado");
 
@@ -232,6 +233,7 @@ public class DocumentoServlet extends HttpServlet {
         doc.setDependencia(dependencia.trim());
         doc.setFechaDocumento(fechaDocumento);
         doc.setRutaArchivo(rutaArchivo != null ? rutaArchivo.trim() : "");
+        doc.setHashSha256(hashSha256 != null ? hashSha256.trim() : null);
         doc.setQrCodigo(qrCodigo);
         doc.setTrd(trd != null ? trd.trim() : "");
         doc.setEstado(estado != null ? estado : "REGISTRADO");

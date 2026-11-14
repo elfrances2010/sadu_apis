@@ -43,10 +43,16 @@ public class Comunicacion {
     // Fecha y hora en que se registró en el sistema
     private Timestamp fechaRegistro;
 
+    // Municipio de procedencia geográfica del remitente (Ventanilla Única / Procedencia Territorial)
+    private String municipioProcedencia;
+
     // ── Constructor vacío ──────────────────────────────────────────
     public Comunicacion() {}
 
     // ── Getters y Setters ──────────────────────────────────────────
+
+    public String getMunicipioProcedencia()             { return municipioProcedencia; }
+    public void setMunicipioProcedencia(String v)       { this.municipioProcedencia = v; }
 
     public int getIdComunicacion()              { return idComunicacion; }
     public void setIdComunicacion(int v)        { this.idComunicacion = v; }

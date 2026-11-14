@@ -26,7 +26,7 @@ import javax.servlet.http.HttpSession;
  *   POST ?accion=radicar  → Registra una nueva comunicación
  *   POST ?accion=cambiarEstado → Actualiza el estado de una comunicación
  */
-@WebServlet(name = "ComunicacionServlet", urlPatterns = {"/comunicaciones"})
+@WebServlet(name = "ComunicacionServlet", urlPatterns = {"/comunicaciones", "/ComunicacionServlet"})
 public class ComunicacionServlet extends HttpServlet {
 
     /**
@@ -152,6 +152,7 @@ public class ComunicacionServlet extends HttpServlet {
         String asunto      = request.getParameter("asunto");
         String fechaStr    = request.getParameter("fechaComunicacion");
         String estado      = request.getParameter("estado");
+        String municipio   = request.getParameter("municipioProcedencia");
 
         // -------------------------------------------------------
         // 2. Validar campos obligatorios
@@ -197,6 +198,7 @@ public class ComunicacionServlet extends HttpServlet {
         com.setRadicado(radicado.trim().toUpperCase());
         com.setTipo(tipo.trim());
         com.setDependencia(dependencia.trim());
+        com.setMunicipioProcedencia(municipio != null ? municipio.trim() : null);
         com.setAsunto(asunto.trim());
         com.setFechaComunicacion(fechaComunicacion);
         com.setEstado(estado != null ? estado : "RECIBIDA");

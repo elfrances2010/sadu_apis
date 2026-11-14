@@ -11,33 +11,46 @@
         return;
     }
 
+    Object rolObj = sesion.getAttribute("rolUsuario");
+    int rolUsuario = 0;
+    if (rolObj instanceof Integer) {
+        rolUsuario = (Integer) rolObj;
+    } else if (rolObj != null) {
+        try { rolUsuario = Integer.parseInt(rolObj.toString()); } catch (Exception e) {}
+    }
+
+    if (rolUsuario != 1 && rolUsuario != 2) {
+        response.sendRedirect("acceso_denegado.jsp");
+        return;
+    }
+
     String nombreUsuario = (String) sesion.getAttribute("nombreUsuario");
 
-    // Datos enviados por DocumentoServlet
     List<Documento> listaDocumentos = (List<Documento>) request.getAttribute("listaDocumentos");
+    if (listaDocumentos == null) {
+        response.sendRedirect("documentos");
+        return;
+    }
+
     String codigoSugerido           = (String)  request.getAttribute("codigoSugerido");
     String error                    = (String)  request.getAttribute("error");
     Boolean busquedaActiva          = (Boolean) request.getAttribute("busquedaActiva");
     Integer totalResultados         = (Integer) request.getAttribute("totalResultados");
 
-    // Valores previos de búsqueda para no limpiar los campos
     String busNombre      = (String) request.getAttribute("busNombre");
     String busTipo        = (String) request.getAttribute("busTipo");
     String busDependencia = (String) request.getAttribute("busDependencia");
     String busEstado      = (String) request.getAttribute("busEstado");
 
-    // Mensaje de éxito desde URL (después de registrar)
     String exito = request.getParameter("exito");
 
-    // Null safety
-    if (busNombre      == null) busNombre      = "";
-    if (busTipo        == null) busTipo        = "";
-    if (busDependencia == null) busDependencia = "";
-    if (busEstado      == null) busEstado      = "";
-    if (busquedaActiva == null) busquedaActiva = false;
-    if (codigoSugerido == null) codigoSugerido = "";
+    if (busquedaActiva  == null) busquedaActiva  = false;
+    if (totalResultados == null) totalResultados = 0;
+    if (busNombre       == null) busNombre       = "";
+    if (busTipo         == null) busTipo         = "";
+    if (busDependencia  == null) busDependencia  = "";
+    if (busEstado       == null) busEstado       = "";
 %>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -147,9 +160,14 @@ body { margin:0; background-color:#f4f6f9; font-family:Arial,sans-serif; }
             <h4 class="mb-0">📄 Gestión de Documentos</h4>
             <small class="text-muted">Registra, consulta y gestiona los documentos institucionales</small>
         </div>
-        <div class="text-end">
-            <strong><%= nombreUsuario %></strong><br>
-            <small class="text-muted">Sesión activa</small>
+        <div class="text-end d-flex align-items-center gap-3">
+            <a href="exportar-fuid" class="btn btn-success btn-sm fw-bold px-3 shadow-sm" title="Descargar Formato Único de Inventario Documental del AGN">
+                <i class="bi bi-file-earmark-spreadsheet-fill me-1"></i> FUID Oficial (Excel / AGN)
+            </a>
+            <div>
+                <strong><%= nombreUsuario %></strong><br>
+                <small class="text-muted">Sesión activa</small>
+            </div>
         </div>
     </div>
 
@@ -273,16 +291,31 @@ body { margin:0; background-color:#f4f6f9; font-family:Arial,sans-serif; }
                     </select>
                 </div>
 
-                <!-- Ruta del archivo (ocupa todo el ancho) -->
+                <!-- Carga y Drag & Drop del Archivo Digital con Hash SHA-256 Automático -->
                 <div class="full">
-                    <label for="rutaArchivo">Ruta del archivo digital</label>
-                    <input
-                        type="text"
-                        id="rutaArchivo"
-                        name="rutaArchivo"
-                        placeholder="Ej: /archivos/2025/oficios/oficio-001.pdf"
-                        maxlength="255"
-                    >
+                    <label>Archivo Digital (PDF / Imagen) con Integridad SHA-256</label>
+                    <div id="dropZoneArchivo" style="border: 2px dashed #3b82f6; border-radius: 10px; padding: 20px; text-align: center; background: #f8fafc; cursor: pointer; transition: all 0.2s;" onclick="document.getElementById('inputArchivoReal').click()">
+                        <input type="file" id="inputArchivoReal" accept=".pdf,.png,.jpg,.jpeg,.tiff" style="display:none;" onchange="procesarArchivoSeleccionado(this.files[0])">
+                        <i class="bi bi-cloud-arrow-up-fill text-primary" style="font-size: 30px;"></i>
+                        <p class="mb-1 fw-bold text-dark" style="font-size: 13.5px;" id="dropTextoPrincipal">Arrastra y suelta tu archivo PDF aquí, o haz clic para seleccionarlo</p>
+                        <small class="text-muted" id="dropTextoSecundario">Soporta PDF, PNG, JPG y TIFF (Máximo 25 MB). Se calculará automáticamente la firma SHA-256 de preservación.</small>
+                        
+                        <!-- Indicador de Archivo Cargado -->
+                        <div id="infoArchivoCargado" style="display:none; margin-top:12px; padding:10px 14px; background:#dcfce7; border:1px solid #86efac; border-radius:8px; text-align:left;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong class="text-success" id="nombreArchivoCargado"><i class="bi bi-file-earmark-check-fill me-1"></i> Documento cargado</strong>
+                                    <span class="badge bg-success ms-2" id="tamanoArchivoCargado"></span>
+                                </div>
+                                <span class="badge bg-dark" style="font-size:10px;"><i class="bi bi-shield-check me-1"></i> SHA-256 CALCULADO</span>
+                            </div>
+                            <div class="mt-1" style="font-size:11px; color:#166534;">
+                                <strong>Huella Digital SHA-256:</strong> <code id="hashSha256Badge" style="color:#14532d; font-size:10.5px;"></code>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="rutaArchivo" name="rutaArchivo" value="">
+                    <input type="hidden" id="hashSha256" name="hashSha256" value="">
                 </div>
 
             </div><!-- fin form-grid -->
@@ -381,6 +414,7 @@ body { margin:0; background-color:#f4f6f9; font-family:Arial,sans-serif; }
                             <th>Código</th>
                             <th>Nombre del documento</th>
                             <th>Tipo</th>
+                            <th>Expediente Digital</th>
                             <th>Dependencia</th>
                             <th>Fecha doc.</th>
                             <th>TRD</th>
@@ -395,6 +429,16 @@ body { margin:0; background-color:#f4f6f9; font-family:Arial,sans-serif; }
                                 <td><strong style="color:#1f3b57;"><%= doc.getCodigo() %></strong></td>
                                 <td><%= doc.getNombreDocumento() %></td>
                                 <td><%= doc.getTipoDocumento() %></td>
+                                <td>
+                                    <% if (doc.getRutaArchivo() != null && !doc.getRutaArchivo().trim().isEmpty()) { %>
+                                        <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2 shadow-sm" style="font-size:11px; font-weight:600;"
+                                                onclick="abrirVisorPdf('ver-archivo?ruta=<%= doc.getRutaArchivo() %>&codigo=<%= doc.getCodigo() %>', '<%= doc.getCodigo() %>', '<%= doc.getNombreDocumento().replace("'", "\\'").replace("\"", "&quot;") %>', '<%= doc.getHashSha256() != null ? doc.getHashSha256() : "SHA-256 Validado" %>')">
+                                            <i class="bi bi-file-earmark-pdf-fill me-1"></i> Ver PDF
+                                        </button>
+                                    <% } else { %>
+                                        <span class="text-muted" style="font-size:11px;">Sin archivo</span>
+                                    <% } %>
+                                </td>
                                 <td><%= doc.getDependencia() %></td>
                                 <td><%= doc.getFechaDocumento() != null ? doc.getFechaDocumento().toString() : "—" %></td>
                                 <td><%= (doc.getTrd() != null && !doc.getTrd().isEmpty()) ? doc.getTrd() : "—" %></td>
@@ -432,6 +476,151 @@ body { margin:0; background-color:#f4f6f9; font-family:Arial,sans-serif; }
     </div>
 
 </div><!-- fin content -->
+
+<!-- MODAL VISOR INTEGRADO DE EXPEDIENTES DIGITALES (PDF.JS / BROWSER) -->
+<div class="modal fade" id="modalVisorPdf" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width:92%;">
+        <div class="modal-content shadow-lg border-0" style="border-radius:12px; overflow:hidden;">
+            <div class="modal-header bg-dark text-white p-3" style="background:#1f3b57 !important;">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-file-earmark-pdf-fill text-danger" style="font-size:22px;"></i>
+                    <div>
+                        <h5 class="modal-title fw-bold mb-0" id="visorPdfTitulo" style="font-size:15px;">Expediente Digital</h5>
+                        <small class="text-white-50" id="visorPdfSubtitulo" style="font-size:11px;"></small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-light" onclick="pantallaCompletaVisor()"><i class="bi bi-fullscreen"></i></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+            </div>
+            <div class="modal-body p-0" style="background:#334155;">
+                <iframe id="frameVisorPdf" src="" style="width:100%; height:620px; border:none; display:block;"></iframe>
+            </div>
+            <div class="modal-footer py-2 px-3 bg-light d-flex justify-content-between align-items-center" style="font-size:11.5px;">
+                <div>
+                    <span class="text-muted">Firma de Integridad Digital:</span>
+                    <code id="visorPdfHash" class="ms-1" style="color:#0f766e; font-size:10.5px;"></code>
+                </div>
+                <div class="d-flex gap-2">
+                    <a id="btnDescargarPdfDirecto" href="#" target="_blank" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-download me-1"></i> Abrir en Pestaña
+                    </a>
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// ========================================================
+// CARGA REAL Y DRAG & DROP DE ARCHIVOS CON HASH SHA-256
+// ========================================================
+const dropZone = document.getElementById('dropZoneArchivo');
+
+['dragenter', 'dragover'].forEach(eventName => {
+    dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#10b981';
+        dropZone.style.background = '#f0fdf4';
+    }, false);
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#3b82f6';
+        dropZone.style.background = '#f8fafc';
+    }, false);
+});
+
+dropZone.addEventListener('drop', (e) => {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    if (files.length > 0) {
+        procesarArchivoSeleccionado(files[0]);
+    }
+});
+
+function procesarArchivoSeleccionado(archivo) {
+    if (!archivo) return;
+
+    // Validación de peso (25 MB)
+    if (archivo.size > 25 * 1024 * 1024) {
+        alert("El archivo supera el límite máximo permitido de 25 MB.");
+        return;
+    }
+
+    const principal = document.getElementById('dropTextoPrincipal');
+    const secundario = document.getElementById('dropTextoSecundario');
+    const info = document.getElementById('infoArchivoCargado');
+
+    principal.innerHTML = '<div class="spinner-border spinner-border-sm text-primary me-2"></div> Subiendo y calculando Hash SHA-256...';
+    secundario.innerText = 'Transfiriendo archivo al repositorio seguro de SADU...';
+
+    const formData = new FormData();
+    formData.append("archivo", archivo);
+
+    fetch('api/subir-archivo', {
+        method: 'POST',
+        body: formData
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.ok) {
+            principal.innerText = "¡Archivo cargado y firmado con éxito!";
+            secundario.innerText = "Puedes arrastrar otro si deseas reemplazarlo.";
+            
+            // Asignar a inputs ocultos
+            document.getElementById('rutaArchivo').value = res.rutaArchivo;
+            document.getElementById('hashSha256').value = res.hashSha256;
+
+            // Mostrar caja de información de éxito
+            document.getElementById('nombreArchivoCargado').innerHTML = '<i class="bi bi-file-earmark-check-fill me-1"></i> ' + res.nombreOriginal;
+            document.getElementById('tamanoArchivoCargado').innerText = res.tamanoLegible;
+            document.getElementById('hashSha256Badge').innerText = res.hashSha256;
+            info.style.display = 'block';
+        } else {
+            alert("Error al subir archivo: " + (res.error || "No se pudo procesar"));
+            resetDropZone();
+        }
+    })
+    .catch(err => {
+        alert("Error de comunicación con el servidor al subir el archivo.");
+        resetDropZone();
+    });
+}
+
+function resetDropZone() {
+    document.getElementById('dropTextoPrincipal').innerText = "Arrastra y suelta tu archivo PDF aquí, o haz clic para seleccionarlo";
+    document.getElementById('dropTextoSecundario').innerText = "Soporta PDF, PNG, JPG y TIFF (Máximo 25 MB). Se calculará automáticamente la firma SHA-256 de preservación.";
+    document.getElementById('infoArchivoCargado').style.display = 'none';
+}
+
+// ========================================================
+// VISOR INTEGRADO DE EXPEDIENTES DIGITALES (PDF)
+// ========================================================
+function abrirVisorPdf(url, codigo, nombre, hash) {
+    document.getElementById('visorPdfTitulo').innerText = codigo + " - " + nombre;
+    document.getElementById('visorPdfSubtitulo').innerText = "Identificador Único: " + codigo + " | Repositorio Oficial SADU";
+    document.getElementById('visorPdfHash').innerText = hash;
+    document.getElementById('frameVisorPdf').src = url;
+    document.getElementById('btnDescargarPdfDirecto').href = url;
+
+    const modal = new bootstrap.Modal(document.getElementById('modalVisorPdf'));
+    modal.show();
+}
+
+function pantallaCompletaVisor() {
+    const frame = document.getElementById('frameVisorPdf');
+    if (frame.requestFullscreen) {
+        frame.requestFullscreen();
+    }
+}
+</script>
 
 </body>
 </html>

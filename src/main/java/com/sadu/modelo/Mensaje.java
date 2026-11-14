@@ -3,107 +3,75 @@ package com.sadu.modelo;
 import java.sql.Timestamp;
 
 /**
- * Clase modelo que representa la tabla mensajes_chat de la base de datos.
- * Cada instancia corresponde a un mensaje enviado por un usuario.
+ * Clase modelo que representa un mensaje del chat empresarial SADU.
  */
 public class Mensaje {
 
-    // Identificador único del mensaje
     private int idMensaje;
-
-    // ID del usuario que envió el mensaje
     private int idUsuario;
-
-    // Nombre completo del usuario (se obtiene con JOIN al listar)
     private String nombreUsuario;
-
-    // Asunto del mensaje
+    private Integer idReceptor;
+    private String nombreReceptor;
     private String asunto;
-
-    // Contenido del mensaje
     private String mensaje;
-
-    // Estado: PENDIENTE, LEIDO o RESPONDIDO
-    private String estado;
-
-    // Fecha y hora en que se envió el mensaje
+    private String tipo = "TEXTO";
+    private String urlAdjunto;
+    private boolean editado = false;
+    private String estado = "PENDIENTE";
     private Timestamp fechaEnvio;
 
-    /**
-     * Constructor vacío requerido para instanciar desde el DAO.
-     */
     public Mensaje() {
     }
 
-    /**
-     * Constructor completo con todos los campos.
-     */
-    public Mensaje(int idMensaje, int idUsuario, String nombreUsuario,
-                   String asunto, String mensaje, String estado, Timestamp fechaEnvio) {
+    public Mensaje(int idMensaje, int idUsuario, String nombreUsuario, Integer idReceptor,
+                   String asunto, String mensaje, String tipo, String urlAdjunto,
+                   boolean editado, String estado, Timestamp fechaEnvio) {
         this.idMensaje     = idMensaje;
         this.idUsuario     = idUsuario;
         this.nombreUsuario = nombreUsuario;
+        this.idReceptor    = idReceptor;
         this.asunto        = asunto;
         this.mensaje       = mensaje;
+        this.tipo          = tipo;
+        this.urlAdjunto    = urlAdjunto;
+        this.editado       = editado;
         this.estado        = estado;
         this.fechaEnvio    = fechaEnvio;
     }
 
-    // --- Getters y Setters ---
+    public int getIdMensaje() { return idMensaje; }
+    public void setIdMensaje(int idMensaje) { this.idMensaje = idMensaje; }
 
-    public int getIdMensaje() {
-        return idMensaje;
-    }
+    public int getIdUsuario() { return idUsuario; }
+    public void setIdUsuario(int idUsuario) { this.idUsuario = idUsuario; }
 
-    public void setIdMensaje(int idMensaje) {
-        this.idMensaje = idMensaje;
-    }
+    public String getNombreUsuario() { return nombreUsuario; }
+    public void setNombreUsuario(String nombreUsuario) { this.nombreUsuario = nombreUsuario; }
 
-    public int getIdUsuario() {
-        return idUsuario;
-    }
+    public Integer getIdReceptor() { return idReceptor; }
+    public void setIdReceptor(Integer idReceptor) { this.idReceptor = idReceptor; }
 
-    public void setIdUsuario(int idUsuario) {
-        this.idUsuario = idUsuario;
-    }
+    public String getNombreReceptor() { return nombreReceptor; }
+    public void setNombreReceptor(String nombreReceptor) { this.nombreReceptor = nombreReceptor; }
 
-    public String getNombreUsuario() {
-        return nombreUsuario;
-    }
+    public String getAsunto() { return asunto; }
+    public void setAsunto(String asunto) { this.asunto = asunto; }
 
-    public void setNombreUsuario(String nombreUsuario) {
-        this.nombreUsuario = nombreUsuario;
-    }
+    public String getMensaje() { return mensaje; }
+    public void setMensaje(String mensaje) { this.mensaje = mensaje; }
 
-    public String getAsunto() {
-        return asunto;
-    }
+    public String getTipo() { return tipo; }
+    public void setTipo(String tipo) { this.tipo = tipo; }
 
-    public void setAsunto(String asunto) {
-        this.asunto = asunto;
-    }
+    public String getUrlAdjunto() { return urlAdjunto; }
+    public void setUrlAdjunto(String urlAdjunto) { this.urlAdjunto = urlAdjunto; }
 
-    public String getMensaje() {
-        return mensaje;
-    }
+    public boolean isEditado() { return editado; }
+    public void setEditado(boolean editado) { this.editado = editado; }
 
-    public void setMensaje(String mensaje) {
-        this.mensaje = mensaje;
-    }
+    public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
 
-    public String getEstado() {
-        return estado;
-    }
-
-    public void setEstado(String estado) {
-        this.estado = estado;
-    }
-
-    public Timestamp getFechaEnvio() {
-        return fechaEnvio;
-    }
-
-    public void setFechaEnvio(Timestamp fechaEnvio) {
-        this.fechaEnvio = fechaEnvio;
-    }
+    public Timestamp getFechaEnvio() { return fechaEnvio; }
+    public void setFechaEnvio(Timestamp fechaEnvio) { this.fechaEnvio = fechaEnvio; }
 }

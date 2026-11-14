@@ -1,21 +1,22 @@
-<%@ page contentType="text/html" pageEncoding="UTF-8" %>
-<%@ page import="javax.servlet.http.HttpSession" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
-    // Verificar que el usuario pasó por la verificación del código
-    HttpSession sesion = request.getSession(false);
-    if (sesion == null || !Boolean.TRUE.equals(sesion.getAttribute("recuperacion_verificado"))) {
-        response.sendRedirect("recuperar_password.jsp");
-        return;
-    }
     String error = (String) request.getAttribute("error");
+    Boolean obligatorio = (Boolean) session.getAttribute("cambioClaveObligatorio");
+    if (obligatorio == null) {
+        String paramOblig = request.getParameter("obligatorio");
+        if ("true".equalsIgnoreCase(paramOblig)) {
+            obligatorio = true;
+        }
+    }
 %>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nueva Contraseña - SADU</title>
+    <title>Nueva Contrase?a - SADU</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
         body {
             margin: 0;
@@ -32,7 +33,7 @@
             border-radius: 18px;
             padding: 40px 44px;
             width: 100%;
-            max-width: 440px;
+            max-width: 460px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
 
@@ -41,9 +42,9 @@
             margin-bottom: 24px;
         }
 
-        .logo .icono { font-size: 52px; display: block; margin-bottom: 8px; }
+        .logo .icono { font-size: 52px; display: block; margin-bottom: 8px; color: #1f3b57; }
         .logo h2 { color: #1f3b57; font-size: 24px; font-weight: bold; margin: 0; }
-        .logo p { color: #9ca3af; font-size: 13px; margin: 6px 0 0; }
+        .logo p { color: #6c757d; font-size: 13px; margin: 6px 0 0; }
 
         label {
             font-size: 13px;
@@ -91,7 +92,6 @@
             margin-bottom: 16px;
         }
 
-        /* Indicador visual de coincidencia de contraseñas */
         .coincidencia {
             font-size: 12px;
             margin-bottom: 20px;
@@ -109,6 +109,7 @@
             padding: 13px;
             border-radius: 8px;
             font-size: 15px;
+            font-weight: 600;
             cursor: pointer;
             transition: background-color 0.3s;
             margin-bottom: 14px;
@@ -120,6 +121,16 @@
             background: #fee2e2;
             color: #b91c1c;
             border: 1px solid #fca5a5;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 13px;
+            margin-bottom: 18px;
+        }
+
+        .alerta-aviso {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
             border-radius: 8px;
             padding: 12px 16px;
             font-size: 13px;
@@ -143,71 +154,68 @@
 <div class="caja">
 
     <div class="logo">
-        <span class="icono">🔑</span>
-        <h2>Nueva contraseña</h2>
-        <p>Establece tu nueva contraseña de acceso</p>
+        <i class="bi bi-shield-lock-fill icono"></i>
+        <h2>Nueva contrase?a</h2>
+        <p>Establece tu nueva contrase?a de acceso</p>
     </div>
 
-    <!-- Indicador de pasos: paso 3 de 3 -->
-    <div class="pasos">
-        <div class="paso completado"></div>
-        <div class="paso completado"></div>
-        <div class="paso activo"></div>
-    </div>
-
-    <%-- Alerta de error --%>
-    <% if (error != null) { %>
-        <div class="alerta-error">⚠️ <%= error %></div>
+    <% if (Boolean.TRUE.equals(obligatorio)) { %>
+        <div class="alerta-aviso">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+            <strong>Cambio de clave requerido:</strong> El administrador o la seguridad del sistema ha solicitado que actualices tu contrase?a antes de continuar.
+        </div>
+    <% } else { %>
+        <div class="pasos">
+            <div class="paso completado"></div>
+            <div class="paso completado"></div>
+            <div class="paso activo"></div>
+        </div>
     <% } %>
 
-    <!--
-        Formulario paso 3: nueva contraseña.
-        Envía por POST al NuevaPasswordServlet.
-    -->
+    <% if (error != null) { %>
+        <div class="alerta-error"><i class="bi bi-x-circle-fill me-1"></i> <%= error %></div>
+    <% } %>
+
     <form action="nuevaPassword" method="post" onsubmit="return validar()">
 
-        <label for="nuevaPassword">Nueva contraseña</label>
+        <label for="nuevaPassword">Nueva contrase?a</label>
         <input
             type="password"
             id="nuevaPassword"
             name="nuevaPassword"
-            placeholder="Mínimo 6 caracteres"
+            placeholder="M?nimo 6 caracteres"
             minlength="6"
             required
             oninput="evaluarFortaleza(this.value); verificarCoincidencia()"
         >
-        <!-- Barra de fortaleza -->
         <div class="fortaleza-barra">
             <div class="fortaleza-relleno" id="fortaleza-relleno"></div>
         </div>
-        <p class="ayuda" id="fortaleza-texto">Ingresa tu nueva contraseña.</p>
+        <p class="ayuda" id="fortaleza-texto">Ingresa tu nueva contrase?a.</p>
 
-        <label for="confirmarPassword">Confirmar contraseña</label>
+        <label for="confirmarPassword">Confirmar contrase?a</label>
         <input
             type="password"
             id="confirmarPassword"
             name="confirmarPassword"
-            placeholder="Repite la contraseña"
+            placeholder="Repite la contrase?a"
             required
             oninput="verificarCoincidencia()"
         >
         <div class="coincidencia" id="coincidencia-msg"></div>
 
-        <button type="submit" class="btn-guardar">✅ Guardar nueva contraseña</button>
+        <button type="submit" class="btn-guardar"><i class="bi bi-check-circle-fill me-1"></i> Guardar nueva contrase?a</button>
     </form>
 </div>
 
 <script>
-    /**
-     * Evalúa la fortaleza de la contraseña.
-     */
     function evaluarFortaleza(valor) {
         const relleno = document.getElementById("fortaleza-relleno");
         const texto   = document.getElementById("fortaleza-texto");
 
         if (valor.length === 0) {
             relleno.style.width = "0%";
-            texto.textContent = "Ingresa tu nueva contraseña.";
+            texto.textContent = "Ingresa tu nueva contrase?a.";
             texto.style.color = "#9ca3af";
             return;
         }
@@ -222,24 +230,21 @@
         if (puntos <= 1) {
             relleno.style.width = "25%";
             relleno.style.backgroundColor = "#dc2626";
-            texto.textContent = "Contraseña débil";
+            texto.textContent = "Contrase?a d?bil";
             texto.style.color = "#dc2626";
         } else if (puntos <= 3) {
             relleno.style.width = "60%";
             relleno.style.backgroundColor = "#f59e0b";
-            texto.textContent = "Contraseña regular";
+            texto.textContent = "Contrase?a regular";
             texto.style.color = "#92400e";
         } else {
             relleno.style.width = "100%";
             relleno.style.backgroundColor = "#10b981";
-            texto.textContent = "Contraseña fuerte ✓";
+            texto.textContent = "Contrase?a fuerte";
             texto.style.color = "#065f46";
         }
     }
 
-    /**
-     * Verifica en tiempo real si las dos contraseñas coinciden.
-     */
     function verificarCoincidencia() {
         const p1  = document.getElementById("nuevaPassword").value;
         const p2  = document.getElementById("confirmarPassword").value;
@@ -248,28 +253,25 @@
         if (p2.length === 0) { msg.textContent = ""; return; }
 
         if (p1 === p2) {
-            msg.textContent = "✓ Las contraseñas coinciden";
+            msg.textContent = "? Las contrase?as coinciden";
             msg.className = "coincidencia ok";
         } else {
-            msg.textContent = "✗ Las contraseñas no coinciden";
+            msg.textContent = "? Las contrase?as no coinciden";
             msg.className = "coincidencia no";
         }
     }
 
-    /**
-     * Valida el formulario antes de enviar.
-     */
     function validar() {
         const p1 = document.getElementById("nuevaPassword").value;
         const p2 = document.getElementById("confirmarPassword").value;
 
         if (p1.length < 6) {
-            alert("La contraseña debe tener al menos 6 caracteres.");
+            alert("La contrase?a debe tener al menos 6 caracteres.");
             return false;
         }
 
         if (p1 !== p2) {
-            alert("Las contraseñas no coinciden. Por favor verifica.");
+            alert("Las contrase?as no coinciden. Por favor verifica.");
             return false;
         }
 

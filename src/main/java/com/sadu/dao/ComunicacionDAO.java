@@ -37,18 +37,19 @@ public class ComunicacionDAO {
             con = Conexion.getConnection();
 
             String sql = "INSERT INTO comunicaciones " +
-                         "(radicado, tipo, dependencia, asunto, " +
+                         "(radicado, tipo, dependencia, municipio_procedencia, asunto, " +
                          " fecha_comunicacion, estado, id_usuario) " +
-                         "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
             ps = con.prepareStatement(sql);
             ps.setString(1, com.getRadicado());
             ps.setString(2, com.getTipo());
             ps.setString(3, com.getDependencia());
-            ps.setString(4, com.getAsunto());
-            ps.setDate(5,   com.getFechaComunicacion());
-            ps.setString(6, com.getEstado());
-            ps.setInt(7,    com.getIdUsuario());
+            ps.setString(4, com.getMunicipioProcedencia());
+            ps.setString(5, com.getAsunto());
+            ps.setDate(6,   com.getFechaComunicacion());
+            ps.setString(7, com.getEstado());
+            ps.setInt(8,    com.getIdUsuario());
 
             return ps.executeUpdate() > 0;
 
@@ -283,6 +284,7 @@ public class ComunicacionDAO {
         com.setRadicado(rs.getString("radicado"));
         com.setTipo(rs.getString("tipo"));
         com.setDependencia(rs.getString("dependencia"));
+        try { com.setMunicipioProcedencia(rs.getString("municipio_procedencia")); } catch(Exception ignored) {}
         com.setAsunto(rs.getString("asunto"));
         com.setFechaComunicacion(rs.getDate("fecha_comunicacion"));
         com.setEstado(rs.getString("estado"));

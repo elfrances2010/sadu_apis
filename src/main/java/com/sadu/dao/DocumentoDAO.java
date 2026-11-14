@@ -39,8 +39,8 @@ public class DocumentoDAO {
 
             String sql = "INSERT INTO documentos " +
                          "(codigo, nombre_documento, tipo_documento, dependencia, " +
-                         " fecha_documento, ruta_archivo, qr_codigo, trd, estado, id_usuario) " +
-                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                         " fecha_documento, ruta_archivo, hash_sha256, qr_codigo, trd, estado, id_usuario) " +
+                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             ps = con.prepareStatement(sql);
             ps.setString(1, doc.getCodigo());
@@ -49,10 +49,11 @@ public class DocumentoDAO {
             ps.setString(4, doc.getDependencia());
             ps.setDate(5,   doc.getFechaDocumento());
             ps.setString(6, doc.getRutaArchivo());
-            ps.setString(7, doc.getQrCodigo());
-            ps.setString(8, doc.getTrd());
-            ps.setString(9, doc.getEstado());
-            ps.setInt(10,   doc.getIdUsuario());
+            ps.setString(7, doc.getHashSha256());
+            ps.setString(8, doc.getQrCodigo());
+            ps.setString(9, doc.getTrd());
+            ps.setString(10, doc.getEstado());
+            ps.setInt(11,   doc.getIdUsuario());
 
             return ps.executeUpdate() > 0;
 
@@ -372,6 +373,7 @@ public class DocumentoDAO {
         doc.setDependencia(rs.getString("dependencia"));
         doc.setFechaDocumento(rs.getDate("fecha_documento"));
         doc.setRutaArchivo(rs.getString("ruta_archivo"));
+        try { doc.setHashSha256(rs.getString("hash_sha256")); } catch(Exception ignored) {}
         doc.setQrCodigo(rs.getString("qr_codigo"));
         doc.setTrd(rs.getString("trd"));
         doc.setEstado(rs.getString("estado"));

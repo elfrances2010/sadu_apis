@@ -9,15 +9,27 @@
         return;
     }
 
-    String nombreUsuario = (String) sesion.getAttribute("nombreUsuario");
-    int    rolUsuario    = (int)    sesion.getAttribute("rolUsuario");
+    Object rolObj = sesion.getAttribute("rolUsuario");
+    int rolUsuario = 0;
+    if (rolObj instanceof Integer) {
+        rolUsuario = (Integer) rolObj;
+    } else if (rolObj != null) {
+        try { rolUsuario = Integer.parseInt(rolObj.toString()); } catch (Exception e) {}
+    }
 
     if (rolUsuario != 1 && rolUsuario != 2) {
         response.sendRedirect("acceso_denegado.jsp");
         return;
     }
 
-    Integer totalDocumentos     = (Integer) request.getAttribute("totalDocumentos");
+    String nombreUsuario = (String) sesion.getAttribute("nombreUsuario");
+
+    Integer totalDocumentos = (Integer) request.getAttribute("totalDocumentos");
+    if (totalDocumentos == null) {
+        response.sendRedirect("reportes");
+        return;
+    }
+
     Integer totalComunicaciones = (Integer) request.getAttribute("totalComunicaciones");
     Integer totalUsuarios       = (Integer) request.getAttribute("totalUsuarios");
     Integer totalMensajes       = (Integer) request.getAttribute("totalMensajes");
@@ -58,14 +70,7 @@
     if (comEstadoValues      == null) comEstadoValues      = "[]";
     if (comTipoLabels        == null) comTipoLabels        = "[]";
     if (comTipoValues        == null) comTipoValues        = "[]";
-    if (usuRolLabels         == null) usuRolLabels         = "[]";
-    if (usuRolValues         == null) usuRolValues         = "[]";
-    if (usuEstadoLabels      == null) usuEstadoLabels      = "[]";
-    if (usuEstadoValues      == null) usuEstadoValues      = "[]";
-    if (audAccionLabels      == null) audAccionLabels      = "[]";
-    if (audAccionValues      == null) audAccionValues      = "[]";
 %>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -122,11 +127,16 @@
     <div class="topbar d-flex justify-content-between align-items-center">
         <div>
             <h4 class="mb-0">📊 Reportes y Estadísticas</h4>
-            <small class="text-muted">Resumen visual del estado del sistema SADU</small>
+            <small class="text-muted">Resumen visual del estado del sistema SADU e inventarios oficiales</small>
         </div>
-        <div class="text-end">
-            <strong><%= nombreUsuario %></strong><br>
-            <small class="text-muted">Sesión activa</small>
+        <div class="text-end d-flex align-items-center gap-3">
+            <a href="exportar-fuid" class="btn btn-success btn-sm fw-bold px-3 shadow-sm" title="Descargar Formato Único de Inventario Documental del AGN">
+                <i class="bi bi-file-earmark-spreadsheet-fill me-1"></i> Descargar FUID Oficial (Excel / AGN)
+            </a>
+            <div>
+                <strong><%= nombreUsuario %></strong><br>
+                <small class="text-muted">Sesión activa</small>
+            </div>
         </div>
     </div>
 

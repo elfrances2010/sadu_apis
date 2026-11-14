@@ -22,7 +22,7 @@ import javax.servlet.http.HttpSession;
  *   GET  (sin accion)    → Redirige a listar por defecto
  *   POST ?accion=buscar  → También acepta búsqueda por POST
  */
-@WebServlet(name = "AuditoriaServlet", urlPatterns = {"/auditoria"})
+@WebServlet(name = "AuditoriaServlet", urlPatterns = {"/auditoria", "/AuditoriaServlet"})
 public class AuditoriaServlet extends HttpServlet {
 
     /**

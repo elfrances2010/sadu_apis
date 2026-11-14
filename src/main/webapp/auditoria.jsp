@@ -11,17 +11,27 @@
         return;
     }
 
-    String nombreUsuario = (String) sesion.getAttribute("nombreUsuario");
-    int    rolUsuario    = (int)    sesion.getAttribute("rolUsuario");
+    Object rolObj = sesion.getAttribute("rolUsuario");
+    int rolUsuario = 0;
+    if (rolObj instanceof Integer) {
+        rolUsuario = (Integer) rolObj;
+    } else if (rolObj != null) {
+        try { rolUsuario = Integer.parseInt(rolObj.toString()); } catch (Exception e) {}
+    }
 
-    // Solo el Administrador (rol 1) puede ver este módulo
     if (rolUsuario != 1) {
         response.sendRedirect("dashboard.jsp");
         return;
     }
 
-    // Datos enviados por AuditoriaServlet
-    List<LogAuditoria> listaLogs    = (List<LogAuditoria>) request.getAttribute("listaLogs");
+    String nombreUsuario = (String) sesion.getAttribute("nombreUsuario");
+
+    List<LogAuditoria> listaLogs = (List<LogAuditoria>) request.getAttribute("listaLogs");
+    if (listaLogs == null) {
+        response.sendRedirect("auditoria");
+        return;
+    }
+
     Integer totalLogs               = (Integer) request.getAttribute("totalLogs");
     Integer logsHoy                 = (Integer) request.getAttribute("logsHoy");
     Integer usuariosActivos         = (Integer) request.getAttribute("usuariosActivos");
@@ -29,23 +39,21 @@
     Integer totalResultados         = (Integer) request.getAttribute("totalResultados");
     String  error                   = (String)  request.getAttribute("error");
 
-    // Valores previos de búsqueda
     String busAccion     = (String) request.getAttribute("busAccion");
     String busIdUsuario  = (String) request.getAttribute("busIdUsuario");
     String busFechaDesde = (String) request.getAttribute("busFechaDesde");
     String busFechaHasta = (String) request.getAttribute("busFechaHasta");
 
-    // Null safety
-    if (busAccion     == null) busAccion     = "";
-    if (busIdUsuario  == null) busIdUsuario  = "";
-    if (busFechaDesde == null) busFechaDesde = "";
-    if (busFechaHasta == null) busFechaHasta = "";
-    if (busquedaActiva == null) busquedaActiva = false;
     if (totalLogs       == null) totalLogs       = 0;
     if (logsHoy         == null) logsHoy         = 0;
-    if (usuariosActivos == null) usuariosActivos  = 0;
+    if (usuariosActivos == null) usuariosActivos = 0;
+    if (totalResultados == null) totalResultados = 0;
+    if (busquedaActiva  == null) busquedaActiva  = false;
+    if (busAccion       == null) busAccion       = "";
+    if (busIdUsuario    == null) busIdUsuario    = "";
+    if (busFechaDesde   == null) busFechaDesde   = "";
+    if (busFechaHasta   == null) busFechaHasta   = "";
 %>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>

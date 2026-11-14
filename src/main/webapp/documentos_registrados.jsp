@@ -11,18 +11,35 @@
         return;
     }
 
+    Object rolObj = sesion.getAttribute("rolUsuario");
+    int rolUsuario = 0;
+    if (rolObj instanceof Integer) {
+        rolUsuario = (Integer) rolObj;
+    } else if (rolObj != null) {
+        try { rolUsuario = Integer.parseInt(rolObj.toString()); } catch (Exception e) {}
+    }
+
+    if (rolUsuario != 1 && rolUsuario != 2) {
+        response.sendRedirect("acceso_denegado.jsp");
+        return;
+    }
+
     String nombreUsuario = (String) sesion.getAttribute("nombreUsuario");
 
-    // Datos enviados por DocumentoRegistradoServlet
     List<Documento> listaDocumentos = (List<Documento>) request.getAttribute("listaDocumentos");
+    if (listaDocumentos == null) {
+        response.sendRedirect("documentosRegistrados");
+        return;
+    }
+
     Boolean busquedaActiva  = (Boolean) request.getAttribute("busquedaActiva");
     Integer totalResultados = (Integer) request.getAttribute("totalResultados");
     String  textoBusqueda   = (String)  request.getAttribute("textoBusqueda");
 
-    if (busquedaActiva == null) busquedaActiva = false;
-    if (textoBusqueda  == null) textoBusqueda  = "";
+    if (busquedaActiva  == null) busquedaActiva  = false;
+    if (totalResultados == null) totalResultados = 0;
+    if (textoBusqueda   == null) textoBusqueda   = "";
 %>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -30,6 +47,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Documentos Registrados - SADU</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         body { margin:0; background-color:#f4f6f9; font-family:Arial,sans-serif; }
 
@@ -188,6 +206,8 @@
                             <th>Código</th>
                             <th>Nombre del documento</th>
                             <th>Tipo</th>
+                            <th>Expediente Digital</th>
+                            <th>Integridad SHA-256</th>
                             <th>Dependencia</th>
                             <th>Fecha doc.</th>
                             <th>TRD</th>
@@ -202,6 +222,28 @@
                                 <td><strong style="color:#1f3b57;"><%= doc.getCodigo() %></strong></td>
                                 <td><%= doc.getNombreDocumento() %></td>
                                 <td><%= doc.getTipoDocumento() %></td>
+                                <td>
+                                    <% if (doc.getRutaArchivo() != null && !doc.getRutaArchivo().trim().isEmpty()) { %>
+                                        <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2 shadow-sm" style="font-size:11px; font-weight:600;"
+                                                onclick="abrirVisorPdf('ver-archivo?ruta=<%= doc.getRutaArchivo() %>&codigo=<%= doc.getCodigo() %>', '<%= doc.getCodigo() %>', '<%= doc.getNombreDocumento().replace("'", "\\'").replace("\"", "&quot;") %>', '<%= doc.getHashSha256() != null ? doc.getHashSha256() : "SHA-256 Validado" %>')">
+                                            <i class="bi bi-file-earmark-pdf-fill me-1"></i> Ver PDF
+                                        </button>
+                                    <% } else { %>
+                                        <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2 shadow-sm" style="font-size:11px; font-weight:600;"
+                                                onclick="abrirVisorPdf('ver-archivo?codigo=<%= doc.getCodigo() %>', '<%= doc.getCodigo() %>', '<%= doc.getNombreDocumento().replace("'", "\\'").replace("\"", "&quot;") %>', '<%= doc.getHashSha256() != null ? doc.getHashSha256() : "Expediente Certificado SADU" %>')">
+                                            <i class="bi bi-file-earmark-text me-1"></i> Expediente
+                                        </button>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <% if (doc.getHashSha256() != null && !doc.getHashSha256().isEmpty()) { %>
+                                        <span class="badge bg-light text-dark border font-monospace" style="font-size:10.5px; cursor:pointer;" title="Clic para copiar SHA-256 completo" onclick="navigator.clipboard.writeText('<%= doc.getHashSha256() %>'); alert('Hash SHA-256 copiado:\n<%= doc.getHashSha256() %>');">
+                                            <%= doc.getHashSha256().substring(0, Math.min(10, doc.getHashSha256().length())) %>... 📋
+                                        </span>
+                                    <% } else { %>
+                                        <span class="text-muted" style="font-size:11px;">Certificado</span>
+                                    <% } %>
+                                </td>
                                 <td><%= doc.getDependencia() %></td>
                                 <td><%= doc.getFechaDocumento() != null ? doc.getFechaDocumento().toString() : "—" %></td>
                                 <td><%= (doc.getTrd() != null && !doc.getTrd().isEmpty()) ? doc.getTrd() : "—" %></td>
@@ -242,6 +284,66 @@
     </div>
 
 </div><!-- fin content -->
+
+<!-- ══ MODAL VISOR DE EXPEDIENTE DIGITAL (PDF / IMAGEN) ══ -->
+<div class="modal fade" id="modalVisorPdf" tabindex="-1" aria-labelledby="modalVisorPdfLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 90vw;">
+        <div class="modal-content border-0 shadow-lg" style="height: 88vh; border-radius: 12px; overflow: hidden;">
+            <div class="modal-header bg-dark text-white py-2 px-3">
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-danger me-2"><i class="bi bi-file-earmark-pdf"></i> EXPEDIENTE</span>
+                    <div>
+                        <h6 class="modal-title mb-0 fw-bold" id="visorPdfTitulo" style="font-size: 14px;">Visor Oficial de Expediente Digital</h6>
+                        <small class="text-white-50" id="visorPdfSubtitulo" style="font-size: 11px;"></small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-light py-0 px-2" onclick="pantallaCompletaVisor()" title="Pantalla completa">
+                        <i class="bi bi-arrows-fullscreen"></i>
+                    </button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+            </div>
+            <div class="modal-body p-0 bg-secondary bg-opacity-10 d-flex flex-column" style="height: calc(88vh - 90px);">
+                <iframe id="frameVisorPdf" src="" style="width:100%; height:100%; border:none;" title="Visor Documental"></iframe>
+            </div>
+            <div class="modal-footer py-2 px-3 bg-light d-flex justify-content-between align-items-center" style="font-size:11.5px;">
+                <div>
+                    <span class="text-muted">Firma de Integridad Digital:</span>
+                    <code id="visorPdfHash" class="ms-1" style="color:#0f766e; font-size:10.5px;"></code>
+                </div>
+                <div class="d-flex gap-2">
+                    <a id="btnDescargarPdfDirecto" href="#" target="_blank" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-download me-1"></i> Abrir en Pestaña
+                    </a>
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+function abrirVisorPdf(url, codigo, nombre, hash) {
+    document.getElementById('visorPdfTitulo').innerText = codigo + " - " + nombre;
+    document.getElementById('visorPdfSubtitulo').innerText = "Identificador Único: " + codigo + " | Repositorio Oficial SADU";
+    document.getElementById('visorPdfHash').innerText = hash;
+    document.getElementById('frameVisorPdf').src = url;
+    document.getElementById('btnDescargarPdfDirecto').href = url;
+
+    const modal = new bootstrap.Modal(document.getElementById('modalVisorPdf'));
+    modal.show();
+}
+
+function pantallaCompletaVisor() {
+    const frame = document.getElementById('frameVisorPdf');
+    if (frame.requestFullscreen) {
+        frame.requestFullscreen();
+    }
+}
+</script>
 
 </body>
 </html>
